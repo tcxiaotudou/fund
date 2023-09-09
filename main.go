@@ -12,7 +12,10 @@ import (
 	"strconv"
 )
 
-var result = map[string]interface{}{}
+var (
+	result = map[string]interface{}{}
+	date   = ""
+)
 
 func main() {
 	// sar("000300")
@@ -26,7 +29,7 @@ func rsi() {
 	rsi := GetRsi()
 	result["14日RSI"] = strconv.Itoa(int(rsi))
 	rsiInt := int(rsi)
-	key := "股债平衡"
+	key := "股债平衡建议"
 	if rsiInt < 30 {
 		result[key] = "9股1债"
 	} else if rsiInt >= 30 && rsiInt < 35 {
@@ -61,6 +64,7 @@ func fear() {
 	}
 	num := dataJson["data"].(map[string]interface{})["num"]
 	currentTime := dataJson["data"].(map[string]interface{})["current_time"]
+	date = currentTime.(string)
 	statusStr := dataJson["data"].(map[string]interface{})["status_str"]
 	result[key] = fmt.Sprintf("%s / %s - %v", currentTime, statusStr, num)
 }
@@ -94,7 +98,7 @@ func sendMail() {
 	m := gomail.NewMessage()
 	m.SetHeader("From", "2290262044@qq.com")
 	m.SetHeader("To", "2290262044@qq.com")
-	m.SetHeader("Subject", "每日行情")
+	m.SetHeader("Subject", fmt.Sprintf("每日行情（%s）", date))
 	content := ""
 	for key, value := range result {
 		content = content + fmt.Sprintf("<h2>%s: %s</h2><br/>", key, value)
