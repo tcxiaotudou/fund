@@ -99,7 +99,39 @@ func sendMail() {
 	m.SetHeader("From", "2290262044@qq.com")
 	m.SetHeader("To", "2290262044@qq.com")
 	m.SetHeader("Subject", fmt.Sprintf("每日行情（%s）", date))
-	content := ""
+	content := `<div>
+    <table border="1">
+      <tr>
+        <th>14日RSI</th>
+        <th>股债比</th>
+      </tr>
+      <tr>
+        <td>...</td>
+        <td>9股-1债</td>
+      </tr>
+      <tr>
+        <td>30 - 35</td>
+        <td>8股-2债</td>
+      </tr>
+      <tr>
+        <td>35 - 40</td>
+        <td>7股-3债</td>
+      </tr>
+      <tr>
+        <td>40 - 60</td>
+        <td>5股-5债</td>
+      </tr>
+      <tr>
+        <td>60 - 65</td>
+        <td>2股-8债</td>
+      </tr>
+      <tr>
+        <td>...</td>
+        <td>1股-9债</td>
+      </tr>
+    </table>
+  </div><br/>`
+
 	for key, value := range result {
 		content = content + fmt.Sprintf("<h2>%s: %s</h2><br/>", key, value)
 	}
