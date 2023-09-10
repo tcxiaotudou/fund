@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"gopkg.in/gomail.v2"
@@ -10,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 )
 
 var (
@@ -147,10 +147,16 @@ func sendMail() {
 // 沪深300风险溢价
 func guPercent() {
 	var key = "沪深300风险溢价"
-	query := bytes.NewReader([]byte(`{"category_type":"cz","pe_category":"fed","region":"","year":10,"type":"pc","version":"2.2.7","authtoken":"","act_time":1694067833457,"tirgkjfs":"53","abiokytke":"77","u54rg5d":"81","kf54ge7":"0","tiklsktr4":"3","lksytkjh":"42c7","sbnoywr":"44","bgd7h8tyu54":"cc","y654b5fs3tr":"7","bioduytlw":"8","bd4uy742":"e","h67456y":"042","bvytikwqjk":"cc","ngd4uy551":"42","bgiuytkw":"24","nd354uy4752":"f","ghtoiutkmlg":"7b3","bd24y6421f":"42","tbvdiuytk":"0","ibvytiqjek":"da","jnhf8u5231":"24","fjlkatj":"819","hy5641d321t":"2e","iogojti":"2","ngd4yut78":"b3","nkjhrew":"e","yt447e13f":"b","n3bf4uj7y7":"2","nbf4uj7y432":"77","yi854tew":"5f","h13ey474":"5f0","quikgdky":"a7"}`))
-
-	response, err := http.Post("https://api.jiucaishuo.com/v2/guzhi/fedshowbasedata",
-		"application/json", query)
+	url := "http://f.gushiyaowan.cn/v1/portfolio/stockBondYRDiff/list?indexCode=000300&bondCode=CN10YR&month=0&startDate=&endDate=" // 请求的URL
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		fmt.Println("创建请求失败:", err)
+		return
+	}
+	// 设置自定义请求头
+	req.Header.Set("accessToken", "1e2e3c4cb0114a1797b276f07cc2b09e")
+	client := &http.Client{}
+	response, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -163,11 +169,12 @@ func guPercent() {
 	if err != nil {
 		return
 	}
-	lists := dataJson["data"].(map[string]interface{})["lists"].([]interface{})
-	for _, list := range lists {
-		data := list.(map[string]interface{})
-		if data["gu_code"] == "000300.SH" {
-			result[key] = data["gu_date"].(string) + " / " + strconv.Itoa(int(100.0-(data["gu_pe"].(float64)))) + "%"
-		}
-	}
+	lists := dataJson["data"].(map[string]interface{})["list"].([]interface{})
+	todayData := lists[len(lists)-1]
+	data := todayData.(map[string]interface{})
+	// 转换为时间
+	t := time.Unix((int64(data["date"].(float64)))/1000, 0)
+	// 只保留年月日
+	date := t.Format("2006-01-02")
+	result[key] = date + " / " + strconv.FormatFloat(data["percentile"].(float64), 'f', -1, 64) + "%"
 }
