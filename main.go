@@ -146,7 +146,7 @@ func sendMail() {
 
 // 沪深300风险溢价
 func guPercent() {
-	var key = "沪深300风险溢价"
+	var key = "股债百分位"
 	url := "http://f.gushiyaowan.cn/v1/portfolio/stockBondYRDiff/list?indexCode=000300&bondCode=CN10YR&month=0&startDate=&endDate=" // 请求的URL
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
