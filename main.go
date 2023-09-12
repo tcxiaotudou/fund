@@ -17,6 +17,13 @@ var (
 	date   = ""
 )
 
+func init() {
+	_, err := time.LoadLocation("Asia/Shanghai")
+	if err != nil {
+		return
+	}
+}
+
 func main() {
 	// sar("000300")
 	fear()
