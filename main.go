@@ -73,7 +73,7 @@ func fear() {
 	currentTime := dataJson["data"].(map[string]interface{})["current_time"]
 	date = currentTime.(string)
 	statusStr := dataJson["data"].(map[string]interface{})["status_str"]
-	result[key] = fmt.Sprintf("%s / %s - %v", currentTime, statusStr, num)
+	result[key] = fmt.Sprintf("%s - %v", statusStr, num)
 }
 
 // 周线SAR
@@ -179,9 +179,5 @@ func guPercent() {
 	lists := dataJson["data"].(map[string]interface{})["list"].([]interface{})
 	todayData := lists[len(lists)-1]
 	data := todayData.(map[string]interface{})
-	// 转换为时间
-	t := time.Unix((int64(data["date"].(float64)))/1000, 0)
-	// 只保留年月日
-	date := t.Format("2006-01-02")
-	result[key] = date + " / " + strconv.FormatFloat(data["percentile"].(float64), 'f', -1, 64) + "%"
+	result[key] = strconv.FormatFloat(data["percentile"].(float64), 'f', -1, 64) + "%"
 }
