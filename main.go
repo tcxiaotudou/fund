@@ -43,8 +43,12 @@ func rsi() {
 		result[key] = "8股2债"
 	} else if rsiInt >= 35 && rsiInt < 40 {
 		result[key] = "7股3债"
-	} else if rsiInt >= 40 && rsiInt < 60 {
+	} else if rsiInt >= 40 && rsiInt < 50 {
 		result[key] = "5股5债"
+	} else if rsiInt >= 50 && rsiInt < 55 {
+		result[key] = "4股6债"
+	} else if rsiInt >= 55 && rsiInt < 60 {
+		result[key] = "3股7债"
 	} else if rsiInt >= 60 && rsiInt < 65 {
 		result[key] = "2股8债"
 	} else if rsiInt >= 65 {
@@ -125,8 +129,16 @@ func sendMail() {
         <td>7股-3债</td>
       </tr>
       <tr>
-        <td>40 - 60</td>
+        <td>40 - 50</td>
         <td>5股-5债</td>
+      </tr>
+      <tr>
+        <td>50 - 55</td>
+        <td>4股-6债</td>
+      </tr>
+      <tr>
+        <td>55 - 60</td>
+        <td>3股-7债</td>
       </tr>
       <tr>
         <td>60 - 65</td>
