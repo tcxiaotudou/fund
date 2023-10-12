@@ -27,7 +27,7 @@ func init() {
 func main() {
 	// sar("000300")
 	fear()
-	guPercent()
+	// guPercent()
 	rsi()
 	sendMail()
 }
