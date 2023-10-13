@@ -13,8 +13,31 @@ import (
 )
 
 var (
-	result = map[string]interface{}{}
-	date   = ""
+	rsiList   = map[string]interface{}{}
+	result    = map[string]interface{}{}
+	date      = ""
+	rsiSource = map[string]string{
+		"科创50":   "sh000688",
+		"中证环保":   "sh000827",
+		"中证1000": "sh000852",
+		"中证100":  "sh000903",
+		"中证500":  "sh000905",
+		"中证800":  "sh000906",
+		"中证能源":   "sh000928",
+		"中证消费":   "sh000932",
+		"中证信息":   "sh000935",
+		"中证体育":   "sz399804",
+		"中证新能":   "sz399808",
+		"中证国安":   "sz399813",
+		"中证军工":   "sz399967",
+		"中证传媒":   "sz399971",
+		"中证国防":   "sz399973",
+		"中证银行":   "sz399986",
+		"中证酒":    "sz399987",
+		"中证医疗":   "sz399989",
+		"中证白酒":   "sz399997",
+		"中证煤炭":   "sz399998",
+	}
 )
 
 func init() {
@@ -33,26 +56,31 @@ func main() {
 }
 
 func rsi() {
-	rsi := GetRsi()
-	result["14日RSI"] = strconv.Itoa(int(rsi))
-	rsiInt := int(rsi)
+	guozhengRsi := GetRsi("sz399317")
+	result["14日RSI"] = strconv.Itoa(int(guozhengRsi))
+	guozhengRsiInt := int(guozhengRsi)
 	key := "股债平衡建议"
-	if rsiInt < 30 {
+	if guozhengRsiInt < 30 {
 		result[key] = "9股1债"
-	} else if rsiInt >= 30 && rsiInt < 35 {
+	} else if guozhengRsiInt >= 30 && guozhengRsiInt < 35 {
 		result[key] = "8股2债"
-	} else if rsiInt >= 35 && rsiInt < 40 {
+	} else if guozhengRsiInt >= 35 && guozhengRsiInt < 40 {
 		result[key] = "7股3债"
-	} else if rsiInt >= 40 && rsiInt < 50 {
+	} else if guozhengRsiInt >= 40 && guozhengRsiInt < 50 {
 		result[key] = "5股5债"
-	} else if rsiInt >= 50 && rsiInt < 55 {
+	} else if guozhengRsiInt >= 50 && guozhengRsiInt < 55 {
 		result[key] = "4股6债"
-	} else if rsiInt >= 55 && rsiInt < 60 {
+	} else if guozhengRsiInt >= 55 && guozhengRsiInt < 60 {
 		result[key] = "3股7债"
-	} else if rsiInt >= 60 && rsiInt < 65 {
+	} else if guozhengRsiInt >= 60 && guozhengRsiInt < 65 {
 		result[key] = "2股8债"
-	} else if rsiInt >= 65 {
+	} else if guozhengRsiInt >= 65 {
 		result[key] = "1股9债"
+	}
+
+	for name, code := range rsiSource {
+		rsi := GetRsi(code)
+		rsiList[name+"("+code+")"] = strconv.Itoa(int(rsi))
 	}
 }
 
@@ -151,9 +179,27 @@ func sendMail() {
     </table>
   </div><br/>`
 
+	risContent := `各行业RSI: <br/><div>
+		<table border="1">
+	`
+
+	for name, rsiValue := range rsiList {
+		content := fmt.Sprintf(`
+      <tr>
+        <td>%s</td>
+        <td>%s</td>
+      </tr>`, name, rsiValue)
+		risContent += content
+	}
+	risContent += `</table>
+  	</div><br/>`
+
 	for key, value := range result {
 		content = content + fmt.Sprintf("<h2>%s: %s</h2><br/>", key, value)
 	}
+
+	content += risContent
+
 	m.SetBody("text/html", content)
 	// 创建一个新的SMTP拨号器
 	d := gomail.NewDialer("smtp.qq.com", 587, "2290262044", "ehdrbzzctgvoebec")

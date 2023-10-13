@@ -4,22 +4,23 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"regexp"
 	"strconv"
 )
 
-func GetRsi() float64 {
-	url := "https://quotes.sina.cn/cn/api/jsonp_v2.php/var%20_sh600036_240_1577432551767=/CN_MarketDataService.getKLineData?symbol=sz399317&scale=240&ma=no&datalen=63"
+func GetRsi(code string) float64 {
+	url := fmt.Sprintf("https://quotes.sina.cn/cn/api/jsonp_v2.php/var _sh600036_240_1577432551767=/CN_MarketDataService.getKLineData?symbol=%s&scale=240&ma=no&datalen=180", code)
 	response, err := http.Get(url)
 	if err != nil {
-		fmt.Println("Error:", err)
+		log.Println("http get error:", err)
 		return 0
 	}
 	defer response.Body.Close()
 	data, err := io.ReadAll(response.Body)
 	if err != nil {
-		fmt.Println("Error:", err)
+		log.Println("io read error:", err)
 		return 0
 	}
 	rex := regexp.MustCompile(`\[([\s\S]*?)]`)
@@ -31,13 +32,14 @@ func GetRsi() float64 {
 	var index []Index
 	err = json.Unmarshal([]byte(jsonStr), &index)
 	if err != nil {
-		panic(err)
+		log.Println("json unmarshal error:", err)
 		return 0
 	}
 	rsiData := make([]float64, 0)
 	for _, data := range index {
-		float, err := strconv.ParseFloat(data.Close, 64)
+		float, err := strconv.ParseFloat(data.Close, 32)
 		if err != nil {
+			log.Println("strconv parseFloat error:", err)
 			return 0
 		}
 		rsiData = append(rsiData, float)
@@ -52,9 +54,10 @@ type Index struct {
 	Date  string `json:"day"`   // 日期
 }
 
-// --------
+// 计算RSI
 func caRsi(inReal []float64, inTimePeriod int) []float64 {
 	outReal := make([]float64, len(inReal))
+
 	if len(inReal) < inTimePeriod {
 		return outReal
 	}
@@ -89,6 +92,7 @@ func caRsi(inReal []float64, inTimePeriod int) []float64 {
 	prevGain /= float64(inTimePeriod)
 
 	if today > 0 {
+
 		tempValue1 = prevGain + prevLoss
 		if !((-0.00000000000001 < tempValue1) && (tempValue1 < 0.00000000000001)) {
 			outReal[outIdx] = 100.0 * (prevGain / tempValue1)
@@ -117,6 +121,7 @@ func caRsi(inReal []float64, inTimePeriod int) []float64 {
 	}
 
 	for today < len(inReal) {
+
 		tempValue1 = inReal[today]
 		today++
 		tempValue2 = tempValue1 - prevValue
@@ -132,8 +137,7 @@ func caRsi(inReal []float64, inTimePeriod int) []float64 {
 		prevGain /= float64(inTimePeriod)
 		tempValue1 = prevGain + prevLoss
 		if !((-0.00000000000001 < tempValue1) && (tempValue1 < 0.00000000000001)) {
-			// outReal[outIdx] = math.Trunc((100.0*(prevGain/tempValue1)-0.11)*1e2+0.5) * 1e-2
-			outReal[outIdx] = float64(int(100.0*(prevGain/tempValue1) - 0.11))
+			outReal[outIdx] = 100.0 * (prevGain / tempValue1)
 		} else {
 			outReal[outIdx] = 0.0
 		}
