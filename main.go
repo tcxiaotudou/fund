@@ -184,13 +184,13 @@ func sendMail() {
 	`
 
 	for name, rsiValue := range rsiList {
-		if rsiValue > 40 {
+		if rsiValue >= 40 {
 			continue
 		}
 		content := fmt.Sprintf(`
       <tr>
         <td>%s</td>
-        <td>%s</td>
+        <td>%d</td>
       </tr>`, name, rsiValue)
 		risContent += content
 	}
