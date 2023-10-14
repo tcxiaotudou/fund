@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
 	"time"
 )
@@ -17,26 +18,44 @@ var (
 	result    = map[string]interface{}{}
 	date      = ""
 	rsiSource = map[string]string{
-		"科创50":   "sh000688",
-		"中证环保":   "sh000827",
-		"中证1000": "sh000852",
-		"中证100":  "sh000903",
-		"中证500":  "sh000905",
-		"中证800":  "sh000906",
-		"中证能源":   "sh000928",
-		"中证消费":   "sh000932",
-		"中证信息":   "sh000935",
-		"中证体育":   "sz399804",
-		"中证新能":   "sz399808",
-		"中证国安":   "sz399813",
-		"中证军工":   "sz399967",
-		"中证传媒":   "sz399971",
-		"中证国防":   "sz399973",
-		"中证银行":   "sz399986",
-		"中证酒":    "sz399987",
-		"中证医疗":   "sz399989",
-		"中证白酒":   "sz399997",
-		"中证煤炭":   "sz399998",
+		"科创50":     "sh000688",
+		"中证环保":     "sh000827",
+		"中证1000":   "sh000852",
+		"中证100":    "sh000903",
+		"中证500":    "sh000905",
+		"中证800":    "sh000906",
+		"中证能源":     "sh000928",
+		"中证消费":     "sh000932",
+		"中证信息":     "sh000935",
+		"中证体育":     "sz399804",
+		"中证新能":     "sz399808",
+		"中证国安":     "sz399813",
+		"中证军工":     "sz399967",
+		"中证传媒":     "sz399971",
+		"中证国防":     "sz399973",
+		"中证银行":     "sz399986",
+		"中证酒":      "sz399987",
+		"中证医疗":     "sz399989",
+		"中证白酒":     "sz399997",
+		"中证煤炭":     "sz399998",
+		"半导体ETF":   "sh512480",
+		"中药ETF":    "sz159647",
+		"创业板指":     "sz399006",
+		"创新药ETF":   "sz159992",
+		"智能汽车ETF":  "sh515250",
+		"科技ETF":    "sh515000",
+		"大数据ETF":   "sh515400",
+		"机器人ETF":   "sz159770",
+		"智能驾驶ETF":  "sh516520",
+		"H股ETF":    "sh510900",
+		"国证油气":     "sz399439",
+		"国证芯片":     "sz980017",
+		"人工智能ETF":  "sh515070",
+		"中证红利ETF":  "sh515080",
+		"证券公司":     "sz399975",
+		"恒生科技ETF":  "sh513180",
+		"恒生互联网ETF": "sh513330",
+		"港股创新药ETF": "sh513120",
 	}
 )
 
@@ -183,7 +202,9 @@ func sendMail() {
 		<table border="1">
 	`
 
-	for name, rsiValue := range rsiList {
+	sortedKeys := sortByValue(rsiList)
+	for _, name := range sortedKeys {
+		rsiValue := rsiList[name]
 		if rsiValue >= 40 {
 			continue
 		}
@@ -241,4 +262,31 @@ func guPercent() {
 	todayData := lists[len(lists)-1]
 	data := todayData.(map[string]interface{})
 	result[key] = strconv.FormatFloat(data["percentile"].(float64), 'f', -1, 64) + "%"
+}
+
+func sortByValue(m map[string]int) []string {
+	// 将 map 数据转换为切片
+	var pairs []struct {
+		Key   string
+		Value int
+	}
+	for k, v := range m {
+		pairs = append(pairs, struct {
+			Key   string
+			Value int
+		}{k, v})
+	}
+
+	// 自定义排序函数
+	sort.Slice(pairs, func(i, j int) bool {
+		return pairs[i].Value < pairs[j].Value
+	})
+
+	// 提取排序后的键值并返回
+	var sortedKeys []string
+	for _, pair := range pairs {
+		sortedKeys = append(sortedKeys, pair.Key)
+	}
+
+	return sortedKeys
 }
