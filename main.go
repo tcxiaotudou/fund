@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	rsiList   = map[string]interface{}{}
+	rsiList   = map[string]int{}
 	result    = map[string]interface{}{}
 	date      = ""
 	rsiSource = map[string]string{
@@ -80,7 +80,7 @@ func rsi() {
 
 	for name, code := range rsiSource {
 		rsi := GetRsi(code)
-		rsiList[name+"("+code+")"] = strconv.Itoa(int(rsi))
+		rsiList[name+"("+code+")"] = int(rsi)
 	}
 }
 
@@ -184,6 +184,9 @@ func sendMail() {
 	`
 
 	for name, rsiValue := range rsiList {
+		if rsiValue > 40 {
+			continue
+		}
 		content := fmt.Sprintf(`
       <tr>
         <td>%s</td>

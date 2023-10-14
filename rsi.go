@@ -10,6 +10,10 @@ import (
 	"strconv"
 )
 
+/**
+港股：https://stock.xueqiu.com/v5/stock/chart/kline.json?symbol=HKHSTECH&begin=1697337471570&period=day&type=before&count=-284&indicator=kline
+*/
+
 func GetRsi(code string) float64 {
 	url := fmt.Sprintf("https://quotes.sina.cn/cn/api/jsonp_v2.php/var _sh600036_240_1577432551767=/CN_MarketDataService.getKLineData?symbol=%s&scale=240&ma=no&datalen=180", code)
 	response, err := http.Get(url)
