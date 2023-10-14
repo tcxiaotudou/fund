@@ -18,6 +18,7 @@ var (
 	result    = map[string]interface{}{}
 	date      = ""
 	rsiSource = map[string]string{
+		"沪深三百":     "sh000300",
 		"科创50":     "sh000688",
 		"中证环保":     "sh000827",
 		"中证1000":   "sh000852",
