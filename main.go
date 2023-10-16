@@ -76,7 +76,7 @@ func main() {
 }
 
 func rsi() {
-	guozhengRsi := GetRsi("sz399317")
+	_, guozhengRsi := GetRsi("sz399317")
 	result["14日RSI"] = strconv.Itoa(int(guozhengRsi))
 	guozhengRsiInt := int(guozhengRsi)
 	key := "股债平衡建议"
@@ -99,7 +99,8 @@ func rsi() {
 	}
 
 	for name, code := range rsiSource {
-		rsi := GetRsi(code)
+		rsiDate, rsi := GetRsi(code)
+		date = rsiDate
 		rsiList[name+"("+code+")"] = int(rsi)
 	}
 }
