@@ -46,7 +46,7 @@ func GetRsi(code string) float64 {
 		if i != len(index)-1 && !strings.Contains(data.Date, "15:00:00") {
 			continue
 		}
-		float, err := strconv.ParseFloat(data.Close, 32)
+		float, err := strconv.ParseFloat(data.Close, 64)
 		if err != nil {
 			log.Println("strconv parseFloat error:", err)
 			return 0
