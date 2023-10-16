@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"strings"
+	"time"
 )
 
 /**
@@ -15,7 +17,7 @@ import (
 */
 
 func GetRsi(code string) float64 {
-	url := fmt.Sprintf("https://quotes.sina.cn/cn/api/jsonp_v2.php/var _sh600036_240_1577432551767=/CN_MarketDataService.getKLineData?symbol=%s&scale=240&ma=no&datalen=180", code)
+	url := fmt.Sprintf("https://quotes.sina.cn/cn/api/jsonp_v2.php/=/CN_MarketDataService.getKLineData?symbol=%s&scale=120&ma=no&datalen=180", code)
 	response, err := http.Get(url)
 	if err != nil {
 		log.Println("http get error:", err)
@@ -40,7 +42,10 @@ func GetRsi(code string) float64 {
 		return 0
 	}
 	rsiData := make([]float64, 0)
-	for _, data := range index {
+	for i, data := range index {
+		if i != len(index)-1 && !strings.Contains(data.Date, "15:00:00") {
+			continue
+		}
 		float, err := strconv.ParseFloat(data.Close, 32)
 		if err != nil {
 			log.Println("strconv parseFloat error:", err)
@@ -56,6 +61,12 @@ func GetRsi(code string) float64 {
 type Index struct {
 	Close string `json:"close"` // 收盘价
 	Date  string `json:"day"`   // 日期
+}
+
+// 是否为收盘时间
+func isTime15(timeObj time.Time) bool {
+	targetTime := time.Date(timeObj.Year(), timeObj.Month(), timeObj.Day(), 15, 0, 0, 0, timeObj.Location())
+	return timeObj.Equal(targetTime)
 }
 
 // 计算RSI

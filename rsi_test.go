@@ -6,6 +6,6 @@ import (
 )
 
 func TestRsi(t *testing.T) {
-	rsiValue := GetRsi("sh000688")
+	rsiValue := GetRsi("sh000300")
 	fmt.Println(rsiValue)
 }
