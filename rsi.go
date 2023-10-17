@@ -12,10 +12,6 @@ import (
 	"time"
 )
 
-/**
-港股：https://stock.xueqiu.com/v5/stock/chart/kline.json?symbol=HKHSTECH&begin=1697337471570&period=day&type=before&count=-284&indicator=kline
-*/
-
 func GetRsi(code string) (string, float64) {
 	date := ""
 	url := fmt.Sprintf("https://quotes.sina.cn/cn/api/jsonp_v2.php/=/CN_MarketDataService.getKLineData?symbol=%s&scale=120&ma=no&datalen=180", code)
