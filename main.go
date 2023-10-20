@@ -215,7 +215,7 @@ func sendMail() {
 	sortedKeys := sortByValue(rsiList)
 	for _, name := range sortedKeys {
 		rsiValue := rsiList[name]
-		if rsiValue >= 40 {
+		if rsiValue >= 35 {
 			continue
 		}
 		content := fmt.Sprintf(`
