@@ -44,6 +44,7 @@ var (
 		"创业板指":     "sz399006",
 		"创新药ETF":   "sz159992",
 		"智能汽车ETF":  "sh515250",
+		"汽车ETF":    "sh516110",
 		"科技ETF":    "sh515000",
 		"大数据ETF":   "sh515400",
 		"机器人ETF":   "sz159770",
@@ -68,6 +69,8 @@ var (
 		"钢铁ETF":    "sh515210",
 		"饮食ETF":    "sz159736",
 		"有色金属ETF":  "sh512400",
+		"上证50ETF":  "sh510050",
+		"新能源ETF":   "sh516160",
 	}
 )
 
@@ -218,7 +221,7 @@ func sendMail() {
 	sortedKeys := sortByValue(rsiList)
 	for _, name := range sortedKeys {
 		rsiValue := rsiList[name]
-		if rsiValue >= 30 {
+		if rsiValue >= 35 {
 			continue
 		}
 		content := fmt.Sprintf(`
