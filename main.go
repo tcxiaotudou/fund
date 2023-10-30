@@ -90,9 +90,9 @@ func main() {
 }
 
 func rsi() {
-	_, guozhengRsi := GetRsi("sz399317")
-	result["14日RSI"] = strconv.Itoa(int(guozhengRsi))
-	guozhengRsiInt := int(guozhengRsi)
+	_, guozheng14Rsi := GetRsi("sz399317", 14)
+	result["14日RSI"] = strconv.Itoa(int(guozheng14Rsi))
+	guozhengRsiInt := int(guozheng14Rsi)
 	key := "股债平衡建议"
 	if guozhengRsiInt < 30 {
 		result[key] = "9股1债"
@@ -112,8 +112,11 @@ func rsi() {
 		result[key] = "1股9债"
 	}
 
+	_, guozheng90Rsi := GetRsi("sz399317", 90)
+	result["90日RSI（57 点和 70 点卖）"] = strconv.Itoa(int(guozheng90Rsi))
+
 	for name, code := range rsiSource {
-		rsiDate, rsi := GetRsi(code)
+		rsiDate, rsi := GetRsi(code, 14)
 		date = rsiDate
 		rsiList[name+"("+code+")"] = int(rsi)
 	}
@@ -221,7 +224,7 @@ func sendMail() {
 	sortedKeys := sortByValue(rsiList)
 	for _, name := range sortedKeys {
 		rsiValue := rsiList[name]
-		if rsiValue >= 35 {
+		if rsiValue >= 30 {
 			continue
 		}
 		content := fmt.Sprintf(`

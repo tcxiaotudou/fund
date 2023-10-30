@@ -12,9 +12,11 @@ import (
 	"time"
 )
 
-func GetRsi(code string) (string, float64) {
+// https://quotes.sina.cn/cn/api/json_v2.php/CN_MarketDataService.getKLineData?symbol=sh000300&scale=30&ma=no&datalen=1023
+
+func GetRsi(code string, dayScale int) (string, float64) {
 	date := ""
-	url := fmt.Sprintf("https://quotes.sina.cn/cn/api/jsonp_v2.php/=/CN_MarketDataService.getKLineData?symbol=%s&scale=120&ma=no&datalen=180", code)
+	url := fmt.Sprintf("https://quotes.sina.cn/cn/api/jsonp_v2.php/=/CN_MarketDataService.getKLineData?symbol=%s&scale=120&ma=no&datalen=360", code)
 	response, err := http.Get(url)
 	if err != nil {
 		log.Println("http get error:", err)
@@ -51,7 +53,7 @@ func GetRsi(code string) (string, float64) {
 		}
 		rsiData = append(rsiData, float)
 	}
-	result := caRsi(rsiData, 14)
+	result := caRsi(rsiData, dayScale)
 	return date, result[len(result)-1]
 }
 
