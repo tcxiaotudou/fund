@@ -161,3 +161,8 @@ func caRsi(inReal []float64, inTimePeriod int) []float64 {
 
 	return outReal
 }
+
+func Decimal(num float64) float64 {
+	num, _ = strconv.ParseFloat(fmt.Sprintf("%.2f", num), 64)
+	return num
+}

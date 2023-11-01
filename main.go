@@ -86,6 +86,7 @@ func main() {
 	fear()
 	// guPercent()
 	rsi()
+	year5AVG()
 	sendMail()
 }
 
@@ -224,7 +225,7 @@ func sendMail() {
 	sortedKeys := sortByValue(rsiList)
 	for _, name := range sortedKeys {
 		rsiValue := rsiList[name]
-		if rsiValue >= 30 {
+		if rsiValue >= 35 {
 			continue
 		}
 		content := fmt.Sprintf(`
@@ -238,7 +239,7 @@ func sendMail() {
   	</div><br/>`
 
 	for key, value := range result {
-		content = content + fmt.Sprintf("<h2>%s: %s</h2><br/>", key, value)
+		content = content + fmt.Sprintf("<h2>%s: %s</h2>", key, value)
 	}
 
 	content += risContent
@@ -281,6 +282,41 @@ func guPercent() {
 	todayData := lists[len(lists)-1]
 	data := todayData.(map[string]interface{})
 	result[key] = strconv.FormatFloat(data["percentile"].(float64), 'f', -1, 64) + "%"
+}
+
+// 5年均线
+func year5AVG() {
+	url := "https://quotes.sina.cn/cn/api/json_v2.php/CN_MarketDataService.getKLineData?symbol=sz399317&scale=1200&ma=no&datalen=255" // 请求的URL
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		fmt.Println("创建请求失败:", err)
+		return
+	}
+	client := &http.Client{}
+	response, err := client.Do(req)
+	if err != nil {
+		return
+	}
+	responseBody, err := io.ReadAll(response.Body)
+	if err != nil {
+		return
+	}
+	var index []Index
+	err = json.Unmarshal(responseBody, &index)
+	if err != nil {
+		log.Println("json unmarshal error:", err)
+	}
+
+	sum := 0.0
+	lastClose := 0.0
+	for _, item := range index {
+		closeData, _ := strconv.ParseFloat(item.Close, 64)
+		lastClose = closeData
+		sum += closeData
+	}
+
+	avg := sum / float64(len(index))
+	result["5年均线"] = fmt.Sprintf("%v", Decimal((lastClose-avg)*100/avg)) + "%"
 }
 
 func sortByValue(m map[string]int) []string {
