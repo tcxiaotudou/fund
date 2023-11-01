@@ -86,7 +86,7 @@ func main() {
 	fear()
 	// guPercent()
 	rsi()
-	year5AVG()
+	MA5Y()
 	sendMail()
 }
 
@@ -284,41 +284,6 @@ func guPercent() {
 	result[key] = strconv.FormatFloat(data["percentile"].(float64), 'f', -1, 64) + "%"
 }
 
-// 5年均线
-func year5AVG() {
-	url := "https://quotes.sina.cn/cn/api/json_v2.php/CN_MarketDataService.getKLineData?symbol=sz399317&scale=1200&ma=no&datalen=255" // 请求的URL
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		fmt.Println("创建请求失败:", err)
-		return
-	}
-	client := &http.Client{}
-	response, err := client.Do(req)
-	if err != nil {
-		return
-	}
-	responseBody, err := io.ReadAll(response.Body)
-	if err != nil {
-		return
-	}
-	var index []Index
-	err = json.Unmarshal(responseBody, &index)
-	if err != nil {
-		log.Println("json unmarshal error:", err)
-	}
-
-	sum := 0.0
-	lastClose := 0.0
-	for _, item := range index {
-		closeData, _ := strconv.ParseFloat(item.Close, 64)
-		lastClose = closeData
-		sum += closeData
-	}
-
-	avg := sum / float64(len(index))
-	result["5年均线"] = fmt.Sprintf("%v", Decimal((lastClose-avg)*100/avg)) + "%"
-}
-
 func sortByValue(m map[string]int) []string {
 	// 将 map 数据转换为切片
 	var pairs []struct {
@@ -344,4 +309,53 @@ func sortByValue(m map[string]int) []string {
 	}
 
 	return sortedKeys
+}
+
+// 5年均线
+// MA5Y returns the five-year moving average of the given data.
+func MA5Y() {
+	url := "https://quotes.sina.cn/cn/api/json_v2.php/CN_MarketDataService.getKLineData?symbol=sz399317&scale=240&ma=no&datalen=1950" // 请求的URL
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		fmt.Println("创建请求失败:", err)
+		return
+	}
+	client := &http.Client{}
+	response, err := client.Do(req)
+	if err != nil {
+		return
+	}
+	responseBody, err := io.ReadAll(response.Body)
+	if err != nil {
+		return
+	}
+	var index []Index
+	err = json.Unmarshal(responseBody, &index)
+	if err != nil {
+		log.Println("json unmarshal error:", err)
+	}
+	lastClose := 0.0
+	n := 1225                                // number of trading days in five years
+	sum := 0.0                               // sum of the last n closing prices
+	ma5Result := make([]float64, len(index)) // result slice
+	for i, data := range index {
+		x, _ := strconv.ParseFloat(data.Close, 64)
+		lastClose = x
+		if i < n-1 {
+			// not enough data to calculate MA5Y, append zero
+			sum += x
+			ma5Result[i] = 0.0
+		} else if i == n-1 {
+			// just enough data to calculate the first MA5Y, append sum / n
+			sum += x
+			ma5Result[i] = sum / float64(n)
+		} else {
+			// more than enough data to calculate MA5Y, append (sum + x - data[i-n]) / n
+			tmp, _ := strconv.ParseFloat(index[i-n].Close, 64)
+			sum += x - tmp
+			ma5Result[i] = sum / float64(n)
+		}
+	}
+	avg := ma5Result[len(ma5Result)-1]
+	result["5年均线"] = fmt.Sprintf("%v", Decimal((lastClose-avg)*100/avg)) + "%"
 }
