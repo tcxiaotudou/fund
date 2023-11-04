@@ -12,6 +12,8 @@ import (
 	"time"
 )
 
+var Date = ""
+
 // RsiGroup https://quotes.sina.cn/cn/api/json_v2.php/CN_MarketDataService.getKLineData?symbol=sh000300&scale=30&ma=no&datalen=1023
 func RsiGroup(code string, dayScale int) []float64 {
 	rsiDataArr := rsiDataArray(code, dayScale)
@@ -72,6 +74,7 @@ func rsiDataArray(code string, dayScale int) []float64 {
 			return nil
 		}
 		rsiData = append(rsiData, float)
+		Date = data.Date
 	}
 	return calRsi(rsiData, dayScale)
 }

@@ -124,7 +124,7 @@ func sendMail() {
 	m := gomail.NewMessage()
 	m.SetHeader("From", "2290262044@qq.com")
 	m.SetHeader("To", "2290262044@qq.com")
-	m.SetHeader("Subject", "每日行情")
+	m.SetHeader("Subject", fmt.Sprintf("每日行情（%s）", strategy.Date))
 	content := `<div>
     <table border="1">
       <tr>
