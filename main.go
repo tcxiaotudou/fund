@@ -3,20 +3,19 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"founds/strategy"
 	"gopkg.in/gomail.v2"
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"sort"
 	"strconv"
 	"time"
 )
 
 var (
-	rsiList   = map[string]int{}
+	rsiList   = map[string][]float64{}
 	result    = map[string]interface{}{}
-	date      = ""
 	rsiSource = map[string]string{
 		"沪深三百":     "sh000300",
 		"科创50":     "sh000688",
@@ -83,16 +82,14 @@ func init() {
 }
 
 func main() {
-	// sar("000300")
-	fear()
 	// guPercent()
 	rsi()
-	MA5Y()
+	Ma5y()
 	sendMail()
 }
 
 func rsi() {
-	_, guozheng14Rsi := GetRsi("sz399317", 14)
+	guozheng14Rsi := strategy.RsiGroup("sz399317", 14)[0]
 	result["14日RSI"] = strconv.Itoa(int(guozheng14Rsi))
 	guozhengRsiInt := int(guozheng14Rsi)
 	key := "股债平衡建议"
@@ -113,62 +110,12 @@ func rsi() {
 	} else if guozhengRsiInt >= 65 {
 		result[key] = "1股9债"
 	}
-
-	_, guozheng90Rsi := GetRsi("sz399317", 90)
+	guozheng90Rsi := strategy.RsiGroup("sz399317", 90)[0]
 	result["90日RSI（57 点和 70 点卖）"] = strconv.Itoa(int(guozheng90Rsi))
 
 	for name, code := range rsiSource {
-		rsiDate, rsi := GetRsi(code, 14)
-		date = rsiDate
-		rsiList[name+"("+code+")"] = int(rsi)
+		rsiList[name+"("+code+")"] = strategy.RsiGroup(code, 14)
 	}
-}
-
-// 恐贪指数
-func fear() {
-	var key = "恐贪指数"
-	response, err := http.Post("https://api.jiucaishuo.com/v2/kjtl/getbasedata",
-		"application/json", nil)
-	if err != nil {
-		return
-	}
-	responseBody, err := io.ReadAll(response.Body)
-	if err != nil {
-		return
-	}
-	var dataJson map[string]interface{}
-	err = json.Unmarshal(responseBody, &dataJson)
-	if err != nil {
-		return
-	}
-	num := dataJson["data"].(map[string]interface{})["num"]
-	currentTime := dataJson["data"].(map[string]interface{})["current_time"]
-	date = currentTime.(string)
-	statusStr := dataJson["data"].(map[string]interface{})["status_str"]
-	result[key] = fmt.Sprintf("%s - %v", statusStr, num)
-}
-
-// 周线SAR
-func sar(code string) {
-	url := fmt.Sprintf("http://webquoteklinepic.eastmoney.com/GetPic.aspx?nid=1.%s&type=W&unitWidth=-6&ef=EXTENDED_SAR&formula=RSI&AT=1&imageType=KXL", code)
-	response, err := http.Get(url)
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
-	defer response.Body.Close()
-	data, err := io.ReadAll(response.Body)
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
-	fileName := fmt.Sprintf("%s_sar_image.jpg", code)
-	err = os.WriteFile(fileName, data, 0644)
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
-	log.Println("Image downloaded successfully.")
 }
 
 // 邮件
@@ -177,7 +124,7 @@ func sendMail() {
 	m := gomail.NewMessage()
 	m.SetHeader("From", "2290262044@qq.com")
 	m.SetHeader("To", "2290262044@qq.com")
-	m.SetHeader("Subject", fmt.Sprintf("每日行情（%s）", date))
+	m.SetHeader("Subject", "每日行情")
 	content := `<div>
     <table border="1">
       <tr>
@@ -222,10 +169,8 @@ func sendMail() {
 	risContent := `各行业RSI: <br/><div>
 		<table border="1">
 	`
-
-	sortedKeys := sortByValue(rsiList)
-	for _, name := range sortedKeys {
-		rsiValue := rsiList[name]
+	for name, rsiGroup := range rsiList {
+		rsiValue := int(rsiGroup[0])
 		if rsiValue >= 35 {
 			continue
 		}
@@ -233,7 +178,12 @@ func sendMail() {
       <tr>
         <td>%s</td>
         <td>%d</td>
-      </tr>`, name, rsiValue)
+		<td>%s</td>
+      </tr>`, name, rsiValue, fmt.Sprintf("(%s, %s, %s, %s)",
+			fmt.Sprintf("%.2f", rsiGroup[1]),
+			fmt.Sprintf("%.2f", rsiGroup[2]),
+			fmt.Sprintf("%.2f", rsiGroup[3]),
+			fmt.Sprintf("%.2f", rsiGroup[4])))
 		risContent += content
 	}
 	risContent += `</table>
@@ -312,9 +262,8 @@ func sortByValue(m map[string]int) []string {
 	return sortedKeys
 }
 
-// 5年均线
-// MA5Y returns the five-year moving average of the given data.
-func MA5Y() {
+// Ma5y 5年均线
+func Ma5y() {
 	url := "https://quotes.sina.cn/cn/api/json_v2.php/CN_MarketDataService.getKLineData?symbol=sz399317&scale=240&ma=no&datalen=1950" // 请求的URL
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -330,7 +279,7 @@ func MA5Y() {
 	if err != nil {
 		return
 	}
-	var index []Index
+	var index []strategy.Index
 	err = json.Unmarshal(responseBody, &index)
 	if err != nil {
 		log.Println("json unmarshal error:", err)
@@ -343,20 +292,20 @@ func MA5Y() {
 		x, _ := strconv.ParseFloat(data.Close, 64)
 		lastClose = x
 		if i < n-1 {
-			// not enough data to calculate MA5Y, append zero
+			// not enough data to calculate Ma5y, append zero
 			sum += x
 			ma5Result[i] = 0.0
 		} else if i == n-1 {
-			// just enough data to calculate the first MA5Y, append sum / n
+			// just enough data to calculate the first Ma5y, append sum / n
 			sum += x
 			ma5Result[i] = sum / float64(n)
 		} else {
-			// more than enough data to calculate MA5Y, append (sum + x - data[i-n]) / n
+			// more than enough data to calculate Ma5y, append (sum + x - data[i-n]) / n
 			tmp, _ := strconv.ParseFloat(index[i-n].Close, 64)
 			sum += x - tmp
 			ma5Result[i] = sum / float64(n)
 		}
 	}
 	avg := ma5Result[len(ma5Result)-1]
-	result["5年均线"] = fmt.Sprintf("%v", Decimal((lastClose-avg)*100/avg)) + "%"
+	result["5年均线"] = fmt.Sprintf("%v", strategy.Decimal((lastClose-avg)*100/avg)) + "%"
 }
