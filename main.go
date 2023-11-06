@@ -71,6 +71,12 @@ var (
 		"上证50ETF":  "sh510050",
 		"新能源ETF":   "sh516160",
 		"科创成长ETF":  "sh588110",
+		"香港证券ETF":  "sh513090",
+		"法国ETF":    "sh513080",
+		"德国ETF":    "sh513030",
+		"标普生物ETF":  "sz161127",
+		"日本ETF":    "sh513520",
+		"游戏ETF":    "sh516010",
 	}
 )
 
@@ -90,7 +96,7 @@ func main() {
 
 func rsi() {
 	guozheng14Rsi := strategy.RsiGroup("sz399317", 14)[0]
-	result["14日RSI"] = strconv.Itoa(int(guozheng14Rsi))
+	result["14日RSI（60点,65点,70点卖）"] = strconv.Itoa(int(guozheng14Rsi))
 	guozhengRsiInt := int(guozheng14Rsi)
 	key := "股债平衡建议"
 	if guozhengRsiInt < 30 {
@@ -166,7 +172,7 @@ func sendMail() {
     </table>
   </div><br/>`
 
-	risContent := `各行业RSI: <br/><div>
+	risContent := `各行业RSI:<br/><div>
 		<table border="1">
 	`
 	for name, rsiGroup := range rsiList {
@@ -194,6 +200,9 @@ func sendMail() {
 	}
 
 	content += risContent
+
+	content += `相关链接:<br/>`
+	content += fmt.Sprintf(`<a href="%s" target="_blank">%s</a><br/>`, "https://youzhiyouxing.cn/data/market", "有知有行全市场温度")
 
 	m.SetBody("text/html", content)
 	// 创建一个新的SMTP拨号器
@@ -264,7 +273,7 @@ func sortByValue(m map[string]int) []string {
 
 // Ma5y 5年均线
 func Ma5y() {
-	url := "https://quotes.sina.cn/cn/api/json_v2.php/CN_MarketDataService.getKLineData?symbol=sz399317&scale=240&ma=no&datalen=1950" // 请求的URL
+	url := "https://quotes.sina.cn/cn/api/json_v2.php/CN_MarketDataService.getKLineData?symbol=sz399317&scale=1200&ma=no&datalen=1950" // 请求的URL
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		fmt.Println("创建请求失败:", err)
@@ -285,7 +294,7 @@ func Ma5y() {
 		log.Println("json unmarshal error:", err)
 	}
 	lastClose := 0.0
-	n := 1225                                // number of trading days in five years
+	n := 52                                  // number of trading days in five years
 	sum := 0.0                               // sum of the last n closing prices
 	ma5Result := make([]float64, len(index)) // result slice
 	for i, data := range index {
