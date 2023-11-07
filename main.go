@@ -21,9 +21,7 @@ var (
 		"科创50":     "sh000688",
 		"中证环保":     "sh000827",
 		"中证1000":   "sh000852",
-		"中证100":    "sh000903",
 		"中证500":    "sh000905",
-		"中证800":    "sh000906",
 		"中证能源":     "sh000928",
 		"中证消费":     "sh000932",
 		"中证信息":     "sh000935",
@@ -300,6 +298,7 @@ func Ma5y() {
 	err = json.Unmarshal(responseBody, &index)
 	if err != nil {
 		log.Println("json unmarshal error:", err)
+		return
 	}
 	lastClose := 0.0
 	n := 52                                  // number of trading days in five years
