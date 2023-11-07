@@ -69,7 +69,6 @@ var (
 		"有色金属ETF":  "sh512400",
 		"上证50ETF":  "sh510050",
 		"新能源ETF":   "sh516160",
-		"科创成长ETF":  "sh588110",
 		"香港证券ETF":  "sh513090",
 		"法国ETF":    "sh513080",
 		"德国ETF":    "sh513030",
@@ -79,7 +78,6 @@ var (
 		"豆柏ETF":    "sz159985",
 		"黄金ETF":    "sz159812",
 		"油气ETF":    "sz159697",
-		"创业板成长ETF": "sz159967",
 		"机床ETF":    "sz159663",
 		"信创ETF":    "sh562030",
 		"通信ETF":    "sh515880",
@@ -127,6 +125,7 @@ func rsi() {
 
 	for name, code := range rsiSource {
 		rsiList[name+"("+code+")"] = strategy.RsiGroup(code, 14)
+		time.Sleep(5 * time.Second)
 	}
 }
 
