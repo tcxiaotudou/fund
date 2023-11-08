@@ -129,14 +129,14 @@ func rsi() {
 	for name, code := range rsiSource {
 		rsi14Group, message := strategy.RsiGroup(code, 14)
 		time.Sleep(5 * time.Second)
-		if rsi14Group[0] >= 35 {
-			continue
+		// 14日rsi小于35 或者 14日rsi小于40 && 最低点大于35
+		if (rsi14Group[0] < 35) || (rsi14Group[0] <= 40 && rsi14Group[4] >= 35) {
+			rsiData := strategy.RsiData{
+				RsiGroup: rsi14Group,
+				Message:  message,
+			}
+			rsiList[name+"("+code+")"] = rsiData
 		}
-		rsiData := strategy.RsiData{
-			RsiGroup: rsi14Group,
-			Message:  message,
-		}
-		rsiList[name+"("+code+")"] = rsiData
 	}
 }
 
