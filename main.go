@@ -198,7 +198,7 @@ func sendMail() {
 		content := fmt.Sprintf(`
 		  <tr>
 			<td>%s</td>
-			<td>%d</td>
+			<td>%s</td>
 			<td>%s</td>
 			<td>%s</td>
 		  </tr>`, name, fmt.Sprintf("%.2f", rsiGroup[0]), fmt.Sprintf("(%s, %s, %s, %s)",
