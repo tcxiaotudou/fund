@@ -65,7 +65,7 @@ func RsiGroup(code string, dayScale int) ([]float64, string) {
 		"65以上有%d天, "+
 		"60以上有%d天, "+
 		"55以上有%d天, "+
-		"当前与最低点之间有%d天, ", len(rsiDataArr), day70, day65, day60, day55, dayMaxLow)
+		"当前与最低点之间有%d天", len(rsiDataArr), day70, day65, day60, day55, dayMaxLow)
 	return group, message
 }
 
