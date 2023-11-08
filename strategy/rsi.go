@@ -71,7 +71,11 @@ func RsiGroup(code string, dayScale int) ([]float64, string) {
 
 // 获取rsi数组数据
 func rsiDataArray(code string, dayScale int) []float64 {
-	url := fmt.Sprintf("https://quotes.sina.cn/cn/api/jsonp_v2.php/=/CN_MarketDataService.getKLineData?symbol=%s&scale=120&ma=no&datalen=120", code)
+	defaultDay := 120
+	if dayScale > defaultDay/2 {
+		defaultDay = dayScale * 2
+	}
+	url := fmt.Sprintf("https://quotes.sina.cn/cn/api/jsonp_v2.php/=/CN_MarketDataService.getKLineData?symbol=%s&scale=120&ma=no&datalen=%d", code, defaultDay)
 	response, err := http.Get(url)
 	if err != nil {
 		log.Println("http get error:", err)
