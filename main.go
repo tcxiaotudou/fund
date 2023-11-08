@@ -130,8 +130,8 @@ func rsi() {
 		rsi14Group, message := strategy.RsiGroup(code, 14)
 		time.Sleep(5 * time.Second)
 		log.Println(name, rsi14Group)
-		// 14日rsi小于35 或者 14日rsi小于40 && 最低点大于35
-		if (rsi14Group[0] < 35) || (rsi14Group[0] <= 40 && rsi14Group[4] >= 35) {
+		// rsi小于35 或者 rsi小于40 && 最低点大于35 或者 rsi处于35-42之间 && 最高点大于65
+		if (rsi14Group[0] < 35) || (rsi14Group[0] <= 40 && rsi14Group[4] >= 35) || (rsi14Group[1] >= 65 && rsi14Group[0] >= 35 && rsi14Group[0] <= 42) {
 			rsiData := strategy.RsiData{
 				RsiGroup: rsi14Group,
 				Message:  message,
