@@ -26,8 +26,11 @@ func RsiGroup(code string, dayScale int) ([]float64, string) {
 	if rsiDataArr == nil {
 		return []float64{0, 0, 0, 0, 0}, message
 	}
-	var high, avg float64
+	high := 0.0
+	avg := 0.0
 	low := 100.0
+	// 忽略前20个元素
+	rsiDataArr = rsiDataArr[20:]
 	for _, rsi := range rsiDataArr {
 		if rsi == 0 {
 			continue
@@ -71,7 +74,7 @@ func RsiGroup(code string, dayScale int) ([]float64, string) {
 
 // 获取rsi数组数据
 func rsiDataArray(code string, dayScale int) []float64 {
-	defaultDay := 132
+	defaultDay := 201
 	if dayScale > defaultDay/2 {
 		defaultDay = dayScale * 4
 	}
@@ -112,7 +115,8 @@ func rsiDataArray(code string, dayScale int) []float64 {
 		rsiData = append(rsiData, float)
 		Date = data.Date
 	}
-	return calRsi(rsiData, dayScale)
+	rsi := calRsi(rsiData, dayScale)
+	return rsi
 }
 
 // Index 定义一个结构体，用来存储指数的收盘价和日期
