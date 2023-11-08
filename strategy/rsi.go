@@ -24,13 +24,16 @@ func RsiGroup(code string, dayScale int) ([]float64, string) {
 	rsiDataArr := rsiDataArray(code, dayScale)
 	message := ""
 	if rsiDataArr == nil {
-		return []float64{0, 0, 0, 0, 0}, message
+		return nil, message
 	}
 	high := 0.0
 	avg := 0.0
 	low := 100.0
 	// 忽略前20个元素
 	rsiDataArr = rsiDataArr[20:]
+	if len(rsiDataArr) < 10 {
+		return nil, message
+	}
 	for _, rsi := range rsiDataArr {
 		if rsi == 0 {
 			continue

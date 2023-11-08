@@ -127,11 +127,16 @@ func rsi() {
 	guozheng90Rsi := rsi90Group[0]
 	result["90日RSI（57 点和 70 点卖）"] = strconv.Itoa(int(guozheng90Rsi))
 	for name, code := range rsiSource {
+		log.Println(name)
 		rsi14Group, message := strategy.RsiGroup(code, 14)
 		time.Sleep(5 * time.Second)
-		log.Println(name, rsi14Group)
-		// rsi小于35 或者 rsi小于40 && 最低点大于35 或者 rsi处于35-42之间 && 最高点大于65
-		if (rsi14Group[0] < 35) || (rsi14Group[0] <= 40 && rsi14Group[4] >= 35) || (rsi14Group[1] >= 65 && rsi14Group[0] >= 35 && rsi14Group[0] <= 42) {
+		if rsi14Group == nil {
+			continue
+		}
+		// rsi小于35 或者 rsi小于40 && 最低点大于35 或者 rsi处于35-42之间 && 最高点大于70
+		if (rsi14Group[0] < 35) ||
+			(rsi14Group[0] <= 40 && rsi14Group[4] >= 35) ||
+			(rsi14Group[1] >= 70 && rsi14Group[0] >= 35 && rsi14Group[0] <= 42) {
 			rsiData := strategy.RsiData{
 				RsiGroup: rsi14Group,
 				Message:  message,
