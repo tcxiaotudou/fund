@@ -126,9 +126,9 @@ func rsi() {
 	rsi90Group, message := strategy.RsiGroup("sz399317", 90)
 	guozheng90Rsi := rsi90Group[0]
 	result["90日RSI（57 点和 70 点卖）"] = strconv.Itoa(int(guozheng90Rsi))
-
 	for name, code := range rsiSource {
 		rsi14Group, message := strategy.RsiGroup(code, 14)
+		time.Sleep(5 * time.Second)
 		if rsi14Group[0] >= 35 {
 			continue
 		}
@@ -137,7 +137,6 @@ func rsi() {
 			Message:  message,
 		}
 		rsiList[name+"("+code+")"] = rsiData
-		time.Sleep(5 * time.Second)
 	}
 }
 
