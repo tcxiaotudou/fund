@@ -12,13 +12,19 @@ import (
 	"time"
 )
 
+type RsiData struct {
+	RsiGroup []float64
+	Message  string
+}
+
 var Date = ""
 
 // RsiGroup https://quotes.sina.cn/cn/api/json_v2.php/CN_MarketDataService.getKLineData?symbol=sh000300&scale=30&ma=no&datalen=1023
-func RsiGroup(code string, dayScale int) []float64 {
+func RsiGroup(code string, dayScale int) ([]float64, string) {
 	rsiDataArr := rsiDataArray(code, dayScale)
+	message := ""
 	if rsiDataArr == nil {
-		return []float64{0, 0, 0, 0, 0}
+		return []float64{0, 0, 0, 0, 0}, message
 	}
 	var high, avg float64
 	low := 100.0
@@ -34,7 +40,33 @@ func RsiGroup(code string, dayScale int) []float64 {
 		}
 	}
 	avg = (high - low) / 3.0
-	return []float64{rsiDataArr[len(rsiDataArr)-1], high, high - avg, high - 2*avg, low}
+	group := []float64{rsiDataArr[len(rsiDataArr)-1], high, high - avg, high - 2*avg, low}
+
+	var dayMaxLow, day70, day65, day60, day55 int
+	for _, rsi := range rsiDataArr {
+		if rsi >= group[4] && rsi < group[0] {
+			dayMaxLow++
+		}
+		if rsi >= 70 {
+			day70++
+		}
+		if rsi >= 65 {
+			day65++
+		}
+		if rsi >= 60 {
+			day60++
+		}
+		if rsi >= 55 {
+			day55++
+		}
+	}
+	message = fmt.Sprintf("数据%d天, "+
+		"70以上有%d天, "+
+		"65以上有%d天, "+
+		"60以上有%d天, "+
+		"55以上有%d天, "+
+		"当前与最低点之间有%d天, ", len(rsiDataArr), day70, day65, day60, day55, dayMaxLow)
+	return group, message
 }
 
 // 获取rsi数组数据

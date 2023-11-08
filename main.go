@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	rsiList   = map[string][]float64{}
+	rsiList   = map[string]strategy.RsiData{}
 	result    = map[string]interface{}{}
 	rsiSource = map[string]string{
 		"沪深三百":     "sh000300",
@@ -101,8 +101,9 @@ func main() {
 }
 
 func rsi() {
-	guozheng14Rsi := strategy.RsiGroup("sz399317", 14)[0]
-	result["14日RSI（60点,65点,70点卖）"] = strconv.Itoa(int(guozheng14Rsi))
+	group, message := strategy.RsiGroup("sz399317", 14)
+	guozheng14Rsi := group[0]
+	result["14日RSI（60点,65点,70点卖）"] = strconv.Itoa(int(guozheng14Rsi)) + "  [" + message + "]"
 	guozhengRsiInt := int(guozheng14Rsi)
 	key := "股债平衡建议"
 	if guozhengRsiInt < 30 {
@@ -122,11 +123,20 @@ func rsi() {
 	} else if guozhengRsiInt >= 65 {
 		result[key] = "1股9债"
 	}
-	guozheng90Rsi := strategy.RsiGroup("sz399317", 90)[0]
+	rsi90Group, message := strategy.RsiGroup("sz399317", 90)
+	guozheng90Rsi := rsi90Group[0]
 	result["90日RSI（57 点和 70 点卖）"] = strconv.Itoa(int(guozheng90Rsi))
 
 	for name, code := range rsiSource {
-		rsiList[name+"("+code+")"] = strategy.RsiGroup(code, 14)
+		rsi14Group, message := strategy.RsiGroup(code, 14)
+		if rsi14Group[0] >= 35 {
+			continue
+		}
+		rsiData := strategy.RsiData{
+			RsiGroup: rsi14Group,
+			Message:  message,
+		}
+		rsiList[name+"("+code+")"] = rsiData
 		time.Sleep(5 * time.Second)
 	}
 }
@@ -182,21 +192,20 @@ func sendMail() {
 	risContent := `各行业RSI:<br/><div>
 		<table border="1">
 	`
-	for name, rsiGroup := range rsiList {
-		rsiValue := int(rsiGroup[0])
-		if rsiValue >= 35 {
-			continue
-		}
+	for name, rsiData := range rsiList {
+		rsiGroup := rsiData.RsiGroup
+		message := rsiData.Message
 		content := fmt.Sprintf(`
-      <tr>
-        <td>%s</td>
-        <td>%d</td>
-		<td>%s</td>
-      </tr>`, name, rsiValue, fmt.Sprintf("(%s, %s, %s, %s)",
+		  <tr>
+			<td>%s</td>
+			<td>%d</td>
+			<td>%s</td>
+			<td>%s</td>
+		  </tr>`, name, fmt.Sprintf("%.2f", rsiGroup[0]), fmt.Sprintf("(%s, %s, %s, %s)",
 			fmt.Sprintf("%.2f", rsiGroup[1]),
 			fmt.Sprintf("%.2f", rsiGroup[2]),
 			fmt.Sprintf("%.2f", rsiGroup[3]),
-			fmt.Sprintf("%.2f", rsiGroup[4])))
+			fmt.Sprintf("%.2f", rsiGroup[4])), message)
 		risContent += content
 	}
 	risContent += `</table>
