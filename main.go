@@ -101,7 +101,7 @@ func main() {
 }
 
 func rsi() {
-	group, message := strategy.RsiGroup("sz399317", 14)
+	group, message := strategy.RsiGroup(strategy.GUO_ZHENG, 14)
 	guozheng14Rsi := group[0]
 	result["14日RSI（60点,65点,70点卖）"] = strconv.Itoa(int(guozheng14Rsi)) + "  [" + message + "]"
 	guozhengRsiInt := int(guozheng14Rsi)
@@ -123,7 +123,7 @@ func rsi() {
 	} else if guozhengRsiInt >= 65 {
 		result[key] = "1股9债"
 	}
-	rsi90Group, message := strategy.RsiGroup("sz399317", 90)
+	rsi90Group, message := strategy.RsiGroup(strategy.GUO_ZHENG, 90)
 	guozheng90Rsi := rsi90Group[0]
 	result["90日RSI（57 点和 70 点卖）"] = strconv.Itoa(int(guozheng90Rsi))
 	for name, code := range rsiSource {
