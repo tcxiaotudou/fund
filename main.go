@@ -133,10 +133,10 @@ func rsi() {
 		if rsi14Group == nil {
 			continue
 		}
-		// rsi小于35 或者 rsi小于40 && 最低点大于35 或者 rsi处于35-42之间 && 最高点大于70
+		// rsi小于35 或者 rsi小于40 && 最低点大于35 或者 rsi处于35-45之间 && 最高点大于70
 		if (rsi14Group[0] < 35) ||
 			(rsi14Group[0] <= 40 && rsi14Group[4] >= 35) ||
-			(rsi14Group[1] >= 70 && rsi14Group[0] >= 35 && rsi14Group[0] <= 42) {
+			(rsi14Group[1] >= 70 && rsi14Group[0] >= 35 && rsi14Group[0] < 45) {
 			rsiData := strategy.RsiData{
 				RsiGroup: rsi14Group,
 				Message:  message,
