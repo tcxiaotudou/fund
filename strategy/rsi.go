@@ -69,10 +69,7 @@ func RsiGroup(code string, dayScale int) ([]float64, string) {
 		}
 	}
 
-	// 离最低点还有大于10天的差距，不做处理
-	if code != GUO_ZHENG && dayMaxLow >= 10 {
-		return nil, message
-	}
+	group = append(group, float64(dayMaxLow))
 
 	message = fmt.Sprintf("数据%d天, "+
 		"70以上有%d天, "+

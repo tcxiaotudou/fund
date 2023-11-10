@@ -103,7 +103,7 @@ func main() {
 func rsi() {
 	group, message := strategy.RsiGroup(strategy.GUO_ZHENG, 14)
 	guozheng14Rsi := group[0]
-	result["14日RSI（60点,65点,70点卖）"] = strconv.Itoa(int(guozheng14Rsi)) + "  [" + message + "]"
+	result[fmt.Sprintf("14日RSI（%s）", message)] = strconv.Itoa(int(guozheng14Rsi))
 	guozhengRsiInt := int(guozheng14Rsi)
 	key := "股债平衡建议"
 	if guozhengRsiInt < 30 {
@@ -133,9 +133,14 @@ func rsi() {
 		if rsi14Group == nil {
 			continue
 		}
-		// rsi小于35 或者 rsi小于40 && 最低点大于35 或者 rsi处于35-45之间 && 最高点大于70
+		// 离最低点还有大于10天的差距，不做处理
+		if rsi14Group[5] >= 10 {
+			continue
+		}
+		// rsi小于35 或者 rsi小于40 && 最低点大于35 或者 rsi离最低点小于5天 或者 rsi处于35-45之间 && 最高点大于70
 		if (rsi14Group[0] < 35) ||
 			(rsi14Group[0] <= 40 && rsi14Group[4] >= 35) ||
+			(rsi14Group[5] <= 5) ||
 			(rsi14Group[1] >= 70 && rsi14Group[0] >= 35 && rsi14Group[0] < 45) {
 			rsiData := strategy.RsiData{
 				RsiGroup: rsi14Group,
