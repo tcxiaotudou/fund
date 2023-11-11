@@ -3,40 +3,51 @@ package strategy
 import (
 	"encoding/json"
 	"fmt"
+	"founds/constant"
 	"io"
 	"log"
 	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 )
 
-const GUO_ZHENG = "sz399317"
-
+// RsiData RSI数据
 type RsiData struct {
-	RsiGroup []float64
-	Message  string
+	Days         int     // RSI数据的天数
+	Now          float64 // 当前RSI
+	High         float64 // RSI最高点
+	TwoThirds    float64 // RSI平均次高点
+	OneThirds    float64 // RSI平均次低点
+	Low          float64 // RSI最低点
+	NowToLowDays int     // 当前RSI距离最低点的天数
+
+	Rsi70Days int // RSI大于等于70的天数
+	Rsi65Days int // RSI大于等于65的天数
+	Rsi60Days int // RSI大于等于60的天数
+	Rsi55Days int // RSI大于等于55的天数
+
+	Message string // 额外提示信息
 }
 
 var Date = ""
 
-// RsiGroup https://quotes.sina.cn/cn/api/json_v2.php/CN_MarketDataService.getKLineData?symbol=sh000300&scale=30&ma=no&datalen=1023
-func RsiGroup(code string, dayScale int) ([]float64, string) {
-	rsiDataArr := rsiDataArray(code, dayScale)
+// Rsi https://quotes.sina.cn/cn/api/json_v2.php/CN_MarketDataService.getKLineData?symbol=sh000300&scale=30&ma=no&datalen=1023
+func Rsi(code string, dayScale int) *RsiData {
+	rsiArr := rsiArray(code, dayScale)
 	message := ""
-	if rsiDataArr == nil {
-		return nil, message
+	if rsiArr == nil {
+		return nil
 	}
 	high := 0.0
 	avg := 0.0
 	low := 100.0
 	// 忽略前20个元素
-	rsiDataArr = rsiDataArr[20:]
-	if len(rsiDataArr) < 10 {
-		return nil, message
+	rsiArr = rsiArr[20:]
+	if len(rsiArr) < 10 {
+		return nil
 	}
-	for _, rsi := range rsiDataArr {
+	for _, rsi := range rsiArr {
 		if rsi == 0 {
 			continue
 		}
@@ -48,40 +59,43 @@ func RsiGroup(code string, dayScale int) ([]float64, string) {
 		}
 	}
 	avg = (high - low) / 3.0
-	group := []float64{rsiDataArr[len(rsiDataArr)-1], high, high - avg, high - 2*avg, low}
-
-	var dayMaxLow, day70, day65, day60, day55 int
-	for _, rsi := range rsiDataArr {
-		if rsi >= group[4] && rsi < group[0] {
-			dayMaxLow++
+	rsiData := &RsiData{
+		Days:      len(rsiArr),
+		Now:       rsiArr[len(rsiArr)-1],
+		High:      high,
+		TwoThirds: high - avg,
+		OneThirds: high - 2*avg,
+		Low:       low,
+		Message:   message,
+	}
+	for _, rsi := range rsiArr {
+		if rsi >= rsiData.Low && rsi < rsiData.Now {
+			rsiData.NowToLowDays++
 		}
 		if rsi >= 70 {
-			day70++
+			rsiData.Rsi70Days++
 		}
 		if rsi >= 65 {
-			day65++
+			rsiData.Rsi65Days++
 		}
 		if rsi >= 60 {
-			day60++
+			rsiData.Rsi60Days++
 		}
 		if rsi >= 55 {
-			day55++
+			rsiData.Rsi55Days++
 		}
 	}
-
-	group = append(group, float64(dayMaxLow))
-
-	message = fmt.Sprintf("数据%d天, "+
+	rsiData.Message = fmt.Sprintf("数据%d天, "+
 		"70以上有%d天, "+
 		"65以上有%d天, "+
 		"60以上有%d天, "+
 		"55以上有%d天, "+
-		"当前与最低点之间有%d天", len(rsiDataArr), day70, day65, day60, day55, dayMaxLow)
-	return group, message
+		"当前与最低点之间有%d天", rsiData.Days, rsiData.Rsi70Days, rsiData.Rsi65Days, rsiData.Rsi60Days, rsiData.Rsi55Days, rsiData.NowToLowDays)
+	return rsiData
 }
 
-// 获取rsi数组数据
-func rsiDataArray(code string, dayScale int) []float64 {
+// rsiArray 获取rsi数组数据
+func rsiArray(code string, dayScale int) []float64 {
 	defaultDay := 201
 	if dayScale > defaultDay/2 {
 		defaultDay = dayScale * 4
@@ -101,10 +115,11 @@ func rsiDataArray(code string, dayScale int) []float64 {
 	rex := regexp.MustCompile(`\[([\s\S]*?)]`)
 	titleMatches := rex.FindAllSubmatch(data, -1)
 	if titleMatches == nil {
+		log.Println("regexp error:", err)
 		return nil
 	}
 	jsonStr := fmt.Sprintf("[%s]", string(titleMatches[0][1]))
-	var index []Index
+	var index []constant.Index
 	err = json.Unmarshal([]byte(jsonStr), &index)
 	if err != nil {
 		log.Println("json unmarshal error:", err)
@@ -127,19 +142,7 @@ func rsiDataArray(code string, dayScale int) []float64 {
 	return rsi
 }
 
-// Index 定义一个结构体，用来存储指数的收盘价和日期
-type Index struct {
-	Close string `json:"close"` // 收盘价
-	Date  string `json:"day"`   // 日期
-}
-
-// 是否为收盘时间
-func isCloseTime(timeObj time.Time) bool {
-	targetTime := time.Date(timeObj.Year(), timeObj.Month(), timeObj.Day(), 15, 0, 0, 0, timeObj.Location())
-	return timeObj.Equal(targetTime)
-}
-
-// 根据收盘价和间隔计算RSI
+// calRsi 根据收盘价和间隔计算RSI
 func calRsi(inReal []float64, inTimePeriod int) []float64 {
 	outReal := make([]float64, len(inReal))
 	if len(inReal) < inTimePeriod {
@@ -221,10 +224,4 @@ func calRsi(inReal []float64, inTimePeriod int) []float64 {
 		outIdx++
 	}
 	return outReal
-}
-
-// Decimal 四舍五入保留两位小数
-func Decimal(num float64) float64 {
-	num, _ = strconv.ParseFloat(fmt.Sprintf("%.2f", num), 64)
-	return num
 }
