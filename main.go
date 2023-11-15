@@ -31,7 +31,7 @@ func main() {
 		}
 		log.Printf("(%s,%s), %v\n", name, code, etfRsiData)
 		// 离最低点还有大于10天的差距，不做处理
-		if etfRsiData.NowToLowDays >= 10 {
+		if etfRsiData.NowToLowDays > 10 {
 			continue
 		}
 		// rsi小于35 或者 rsi小于40 && 最低点大于35 或者 rsi离最低点小于5天 或者 rsi处于35-45之间 && 最高点大于70
