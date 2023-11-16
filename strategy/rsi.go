@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // RsiData RSI数据
@@ -27,7 +28,8 @@ type RsiData struct {
 	Rsi60Days int // RSI大于等于60的天数
 	Rsi55Days int // RSI大于等于55的天数
 
-	Message string // 额外提示信息
+	Message string    // 额外提示信息
+	Time    time.Time // 时间
 }
 
 var Date = ""
@@ -67,6 +69,7 @@ func Rsi(code string, dayScale int) *RsiData {
 		OneThirds: high - 2*avg,
 		Low:       low,
 		Message:   message,
+		Time:      time.Now(),
 	}
 	for _, rsi := range rsiArr {
 		if rsi >= rsiData.Low && rsi < rsiData.Now {
