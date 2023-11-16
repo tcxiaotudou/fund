@@ -83,7 +83,7 @@ func SendMail(rsiList map[string]*strategy.RsiData, result map[string]interface{
 	for key, value := range result {
 		content = content + fmt.Sprintf("<li>%s: %s</li>", key, value)
 	}
-	content += "</ul><br/>"
+	content += "</ul>"
 	risContent := `<h4>买入建议:</h4>
 		<table border="1" style="border-collapse: collapse;">
 		<tr>
@@ -109,10 +109,9 @@ func SendMail(rsiList map[string]*strategy.RsiData, result map[string]interface{
 			fmt.Sprintf("%.2f", rsiData.Low)), rsiData.Message, rsiData.Time.Format("2006-01-02 15:04:05"))
 		risContent += content
 	}
-	risContent += `</table>
-  	<br/>`
+	risContent += `</table>`
 	content += risContent
-	content += `相关链接:<br/>`
+	content += "<h4>相关链接:</h4><br/>"
 	content += fmt.Sprintf(`<a href="%s" target="_blank">%s</a><br/>`, "https://youzhiyouxing.cn/data/market", "有知有行全市场温度")
 
 	m.SetBody("text/html", content)
