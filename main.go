@@ -79,7 +79,7 @@ func SendMail(rsiList map[string]*strategy.RsiData, result map[string]interface{
 	m.SetHeader("From", "2290262044@qq.com")
 	m.SetHeader("To", "2290262044@qq.com")
 	m.SetHeader("Subject", fmt.Sprintf("每日行情（%s）", strategy.Date))
-	content := "<h4>行情数据：</h4><br/><ul>"
+	content := "<h4>行情数据：</h4><ul>"
 	for key, value := range result {
 		content = content + fmt.Sprintf("<li>%s: %s</li>", key, value)
 	}
