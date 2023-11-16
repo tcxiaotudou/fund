@@ -84,7 +84,7 @@ func SendMail(rsiList map[string]*strategy.RsiData, result map[string]interface{
 		content = content + fmt.Sprintf("<li>%s: %s</li>", key, value)
 	}
 	content += "</ul>"
-	risContent := `<h4>买入建议:</h4>
+	risContent := `<h4>买入建议:</h4><br/>
 		<table border="1" style="border-collapse: collapse;">
 		<tr>
 			<th>名称</th>
@@ -109,11 +109,12 @@ func SendMail(rsiList map[string]*strategy.RsiData, result map[string]interface{
 			fmt.Sprintf("%.2f", rsiData.Low)), rsiData.Message, rsiData.Time.Format("2006-01-02 15:04:05"))
 		risContent += content
 	}
-	risContent += `</table>`
+	risContent += `</table><br/>`
 	content += risContent
-	content += "<h4>相关链接:</h4><br/>"
-	content += fmt.Sprintf(`<a href="%s" target="_blank">%s</a><br/>`, "https://youzhiyouxing.cn/data/market", "有知有行全市场温度")
+	content += "<h4>相关链接:</h4><ul>"
+	content += fmt.Sprintf(`<li><a href="%s" target="_blank">%s</a></li>`, "https://youzhiyouxing.cn/data/market", "有知有行全市场温度")
 
+	content += "</ul>"
 	m.SetBody("text/html", content)
 	// 创建一个新的SMTP拨号器
 	d := gomail.NewDialer("smtp.qq.com", 587, "2290262044", "ehdrbzzctgvoebec")
