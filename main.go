@@ -84,7 +84,7 @@ func SendMail(rsiList map[string]*strategy.RsiData, result map[string]interface{
 		content = content + fmt.Sprintf("<li>%s: %s</li>", key, value)
 	}
 	content += "</ul><br/>"
-	risContent := `<h4>买入建议:<h4/>
+	risContent := `<h4>买入建议:</h4>
 		<table border="1" style="border-collapse: collapse;">
 		<tr>
 			<th>名称</th>
