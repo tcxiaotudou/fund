@@ -51,7 +51,7 @@ func main() {
 					fmt.Sprintf("%.2f", etfRsiData.OneThirds),
 					fmt.Sprintf("%.2f", etfRsiData.Low)),
 				Remark: etfRsiData.Message,
-				Time:   time.Now().Format("2006-01-02 15:01:05"),
+				Time:   time.Now().Format("2006-01-02 15:04:05"),
 			}
 			suggests = append(suggests, suggest)
 		}
