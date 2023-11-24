@@ -22,6 +22,7 @@ func main() {
 	result["90日RSI（57 点和 70 点卖）"] = fmt.Sprintf("%.2f", guoZheng90RsiData.Now)
 	result["股债平衡建议"] = strategy.RsiStockBalance(guoZheng90RsiData.Now)
 	result["5年均线"] = strategy.Ma5y()
+	result["沪深300风险溢价"] = strategy.Stock300Balance()
 
 	// ETF Rsi
 	suggests := make([]constant.Suggest, 0)

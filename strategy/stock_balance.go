@@ -1,41 +1,50 @@
 package strategy
 
 import (
+	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 )
 
 // 沪深三百股债平衡
-func stock300Balance() (key, value string) {
-	url := "http://f.gushiyaowan.cn/v1/portfolio/stockBondYRDiff/list?indexCode=000300&bondCode=CN10YR&month=0&startDate=&endDate=" // 请求的URL
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		fmt.Println("创建请求失败:", err)
-		return
+func Stock300Balance() (value string) {
+	url := "https://api.jiucaishuo.com/gz/gz/fed"
+
+	// 构建请求数据
+	requestData := map[string]interface{}{
+		"gu_code": "000300.SH",
+		"year":    5,
+		"type":    "h5",
 	}
-	// 设置自定义请求头
-	req.Header.Set("accessToken", "1e2e3c4cb0114a1797b276f07cc2b09e")
-	client := &http.Client{}
-	response, err := client.Do(req)
+
+	jsonData, err := json.Marshal(requestData)
 	if err != nil {
-		return
+		log.Fatal(err)
 	}
-	responseBody, err := io.ReadAll(response.Body)
+	// 发送POST请求
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
-		return
+		log.Fatal(err)
 	}
+	defer resp.Body.Close()
+
+	// 读取响应内容
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// 输出响应结果
 	var dataJson map[string]interface{}
 	err = json.Unmarshal(responseBody, &dataJson)
-	if err != nil {
+	if err != nil || dataJson["message"].(string) != "success" {
 		return
 	}
-	lists := dataJson["data"].(map[string]interface{})["list"].([]interface{})
-	todayData := lists[len(lists)-1]
-	data := todayData.(map[string]interface{})
-	return "股债百分位", strconv.FormatFloat(data["percentile"].(float64), 'f', -1, 64) + "%"
+	data := dataJson["data"].(map[string]interface{})["new"].(map[string]interface{})
+	return strconv.FormatFloat(data["percent"].(float64), 'f', -1, 64) + "%"
 }
 
 // RsiStockBalance 14日RSI股债平衡建议

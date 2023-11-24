@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"founds/strategy"
 	"net/http"
 	"net/url"
 	"testing"
@@ -49,4 +50,9 @@ func TestPush(t *testing.T) {
 	defer response.Body.Close()
 
 	fmt.Println("Push notification sent successfully!")
+}
+
+func TestStockBalance(t *testing.T) {
+	data := strategy.Stock300Balance()
+	fmt.Println(data)
 }
