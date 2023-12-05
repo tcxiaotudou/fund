@@ -39,8 +39,7 @@ func main() {
 		}
 		// rsi小于30 或者 rsi离最低点小于5天 或者 rsi小于45 && 最低点大于35 && 最高点大于70
 		if (etfRsiData.Now <= 30) ||
-			(etfRsiData.NowToLowDays < 5) ||
-			(etfRsiData.High >= 70 && etfRsiData.Now <= 45 && etfRsiData.Low >= 35) {
+			(etfRsiData.High >= 70 && etfRsiData.Now <= 43 && etfRsiData.Low >= 37) {
 			rsiList[name+"("+code+")"] = etfRsiData
 			// 纳入购买建议
 			suggest := constant.Suggest{
