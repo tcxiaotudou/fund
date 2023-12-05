@@ -6,6 +6,7 @@ import (
 	"founds/strategy"
 	"gopkg.in/gomail.v2"
 	"log"
+	"sort"
 	"time"
 )
 
@@ -25,7 +26,7 @@ func main() {
 	result["沪深300风险溢价"] = strategy.Stock300Balance()
 
 	// ETF Rsi
-	suggests := make([]constant.Suggest, 0)
+	suggestions := make([]constant.Suggest, 0)
 	for name, code := range constant.EtfGroups {
 		time.Sleep(5 * time.Second)
 		etfRsiData := strategy.Rsi(code, 14)
@@ -39,12 +40,12 @@ func main() {
 		}
 		// rsi小于30 或者 rsi离最低点小于5天 或者 rsi小于45 && 最低点大于35 && 最高点大于70
 		if (etfRsiData.Now <= 30) ||
-			(etfRsiData.High >= 70 && etfRsiData.Now <= 43 && etfRsiData.Low >= 37) {
+			(etfRsiData.High >= 70 && etfRsiData.Now <= 43 && etfRsiData.Low >= 38) {
 			rsiList[name+"("+code+")"] = etfRsiData
 			// 纳入购买建议
-			suggest := constant.Suggest{
+			suggestion := constant.Suggest{
 				CodeName: name + "(" + code + ")",
-				Now:      fmt.Sprintf("%.2f", etfRsiData.Now),
+				Now:      etfRsiData.Now,
 				Interval: fmt.Sprintf("(%s, %s, %s, %s)",
 					fmt.Sprintf("%.2f", etfRsiData.High),
 					fmt.Sprintf("%.2f", etfRsiData.TwoThirds),
@@ -53,10 +54,15 @@ func main() {
 				Remark: etfRsiData.Message,
 				Time:   time.Now().Format("2006-01-02 15:04:05"),
 			}
-			suggests = append(suggests, suggest)
+			suggestions = append(suggestions, suggestion)
 		}
 	}
-	SendMail(rsiList, result)
+
+	sort.Slice(suggestions, func(i, j int) bool {
+		return suggestions[i].Now < suggestions[j].Now
+	})
+
+	SendMail(suggestions, result)
 }
 
 /**
@@ -72,7 +78,7 @@ func main() {
 */
 
 // SendMail 邮件
-func SendMail(rsiList map[string]*strategy.RsiData, result map[string]interface{}) {
+func SendMail(rsiList []constant.Suggest, result map[string]interface{}) {
 	// 创建一个新的邮件消息
 	m := gomail.NewMessage()
 	m.SetHeader("From", "2290262044@qq.com")
@@ -93,7 +99,7 @@ func SendMail(rsiList map[string]*strategy.RsiData, result map[string]interface{
 			<th>时间</th>
         </tr>
 	`
-	for name, rsiData := range rsiList {
+	for _, rsiData := range rsiList {
 		content := fmt.Sprintf(`
 		  <tr>
 			<td>%s</td>
@@ -101,11 +107,7 @@ func SendMail(rsiList map[string]*strategy.RsiData, result map[string]interface{
 			<td>%s</td>
 			<td>%s</td>
 			<td>%s</td>
-		  </tr>`, name, fmt.Sprintf("%.2f", rsiData.Now), fmt.Sprintf("(%s, %s, %s, %s)",
-			fmt.Sprintf("%.2f", rsiData.High),
-			fmt.Sprintf("%.2f", rsiData.TwoThirds),
-			fmt.Sprintf("%.2f", rsiData.OneThirds),
-			fmt.Sprintf("%.2f", rsiData.Low)), rsiData.Message, rsiData.Time.Format("2006-01-02 15:04:05"))
+		  </tr>`, rsiData.CodeName, fmt.Sprintf("%.2f", rsiData.Now), rsiData.Interval, rsiData.Remark, rsiData.Time)
 		risContent += content
 	}
 	risContent += `</table><br/>`
