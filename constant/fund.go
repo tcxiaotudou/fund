@@ -12,4 +12,5 @@ type Fund struct {
 	Yield3      string  `json:"yield3"`       // 近3个月收益率
 	Yield6      string  `json:"yield6"`       // 近6个月收益率
 	Yield12     string  `json:"yield12"`      // 近一年收益率
+	Reason      string  `json:"reason"`       // 入选理由
 }

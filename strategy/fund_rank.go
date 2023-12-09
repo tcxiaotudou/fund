@@ -23,11 +23,11 @@ func FundRank() []*constant.Fund {
 	fundMap := make(map[string]*constant.Fund)
 	list := make([]*constant.Fund, 0)
 	fundRank3 := rank(3)
-	fundRank6 := rank(6)
-	fundRank12 := rank(12)
+	//fundRank6 := rank(6)
+	//fundRank12 := rank(12)
 	list = append(list, fundRank3...)
-	list = append(list, fundRank6...)
-	list = append(list, fundRank12...)
+	//list = append(list, fundRank6...)
+	//list = append(list, fundRank12...)
 	for _, fund := range list {
 		if fundMap[fund.Code] == nil {
 			fundMap[fund.Code] = fund
@@ -105,8 +105,9 @@ func rank(monthScale int) []*constant.Fund {
 		name := fundInfo["name"].String()
 		code := fundInfo["code"].String()
 		fund := &constant.Fund{
-			Name: name,
-			Code: code,
+			Name:   name,
+			Code:   code,
+			Reason: fmt.Sprintf("近%d个月收益", monthScale),
 		}
 		result = append(result, fund)
 	}
@@ -133,7 +134,7 @@ func filter(funds []*constant.Fund) []*constant.Fund {
 		}
 
 		retracement, err := strconv.ParseFloat(fund.Retracement, 64)
-		if err != nil && retracement < -15 {
+		if err == nil && retracement < -15 {
 			continue
 		}
 
