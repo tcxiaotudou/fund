@@ -56,3 +56,8 @@ func TestStockBalance(t *testing.T) {
 	data := strategy.Stock300Balance()
 	fmt.Println(data)
 }
+
+func TestFundRank(t *testing.T) {
+	list := strategy.FundRank()
+	fmt.Println(list)
+}

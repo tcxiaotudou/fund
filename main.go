@@ -62,7 +62,10 @@ func main() {
 		return suggestions[i].Now < suggestions[j].Now
 	})
 
-	SendMail(suggestions, result)
+	// 推荐基金
+	funds := strategy.FundRank()
+
+	SendMail(funds, suggestions, result)
 }
 
 /**
@@ -78,7 +81,7 @@ func main() {
 */
 
 // SendMail 邮件
-func SendMail(rsiList []constant.Suggest, result map[string]interface{}) {
+func SendMail(funds []*constant.Fund, rsiList []constant.Suggest, result map[string]interface{}) {
 	// 创建一个新的邮件消息
 	m := gomail.NewMessage()
 	m.SetHeader("From", "2290262044@qq.com")
@@ -89,7 +92,7 @@ func SendMail(rsiList []constant.Suggest, result map[string]interface{}) {
 		content = content + fmt.Sprintf("<li>%s: %s</li>", key, value)
 	}
 	content += "</ul>"
-	risContent := `<h4>买入建议:</h4><br/>
+	risContent := `<h4>场内ETF买入建议:</h4><br/>
 		<table border="1" style="border-collapse: collapse;">
 		<tr>
 			<th>名称</th>
@@ -112,10 +115,48 @@ func SendMail(rsiList []constant.Suggest, result map[string]interface{}) {
 	}
 	risContent += `</table><br/>`
 	content += risContent
+
+	// 基金排行榜
+	fundContent := `<h4>场外基金推荐:</h4><br/>
+		<table border="1" style="border-collapse: collapse;">
+		<tr>
+			<th>名称</th>
+			<th>规模</th>
+			<th>近一年最大回撤</th>
+			<th>夏普率</th>
+			<th>近3个月收益</th>
+			<th>近6个月收益</th>
+			<th>近一年收益</th>
+        </tr>
+	`
+	for _, fund := range funds {
+		content := fmt.Sprintf(`
+		  <tr>
+			<td>%s</td>
+			<td>%s</td>
+			<td>%s</td>
+			<td>%s</td>
+			<td>%s</td>
+			<td>%s</td>
+			<td>%s</td>
+		  </tr>`, fmt.Sprintf("%s(%s)", fund.Name, fund.Code),
+			fmt.Sprintf("%.2f亿", fund.Scale),
+			fmt.Sprintf("%s%%", fund.Retracement),
+			fund.Sharpe,
+			fmt.Sprintf("%s%%", fund.Yield3),
+			fmt.Sprintf("%s%%", fund.Yield6),
+			fmt.Sprintf("%s%%", fund.Yield12))
+		fundContent += content
+	}
+	fundContent += `</table><br/>`
+	content += fundContent
+
+	// 相关链接
 	content += "<h4>相关链接:</h4><ul>"
 	content += fmt.Sprintf(`<li><a href="%s" target="_blank">%s</a></li>`, "https://youzhiyouxing.cn/data/market", "有知有行全市场温度")
 
 	content += "</ul>"
+
 	m.SetBody("text/html", content)
 	// 创建一个新的SMTP拨号器
 	d := gomail.NewDialer("smtp.qq.com", 587, "2290262044", "ehdrbzzctgvoebec")
