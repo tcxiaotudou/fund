@@ -15,13 +15,16 @@ import (
 
 // RsiData RSI数据
 type RsiData struct {
-	Days         int     // RSI数据的天数
-	Now          float64 // 当前RSI
-	High         float64 // RSI最高点
-	TwoThirds    float64 // RSI平均次高点
-	OneThirds    float64 // RSI平均次低点
-	Low          float64 // RSI最低点
-	NowToLowDays int     // 当前RSI距离最低点的天数
+	Days      int     // RSI数据的天数
+	Now       float64 // 当前RSI
+	High      float64 // RSI最高点
+	TwoThirds float64 // RSI平均次高点
+	OneThirds float64 // RSI平均次低点
+	Low       float64 // RSI最低点
+
+	High2NowLow float64 // RSI最高点 到 当前位置，中间出现的最低点
+
+	NowToLowDays int // 当前RSI距离最低点的天数
 
 	Rsi70Days int // RSI大于等于70的天数
 	Rsi65Days int // RSI大于等于65的天数
@@ -44,17 +47,20 @@ func Rsi(code string, dayScale int) *RsiData {
 	high := 0.0
 	avg := 0.0
 	low := 100.0
+	High2NowLow := 100.0
 	// 忽略前20个元素
 	rsiArr = rsiArr[20:]
 	if len(rsiArr) < 10 {
 		return nil
 	}
-	for _, rsi := range rsiArr {
+	var highIndex int
+	for index, rsi := range rsiArr {
 		if rsi == 0 {
 			continue
 		}
 		if rsi > high {
 			high = rsi
+			highIndex = index
 		}
 		if rsi < low {
 			low = rsi
@@ -71,7 +77,7 @@ func Rsi(code string, dayScale int) *RsiData {
 		Message:   message,
 		Time:      time.Now(),
 	}
-	for _, rsi := range rsiArr {
+	for index, rsi := range rsiArr {
 		if rsi >= rsiData.Low && rsi < rsiData.Now {
 			rsiData.NowToLowDays++
 		}
@@ -86,6 +92,11 @@ func Rsi(code string, dayScale int) *RsiData {
 		}
 		if rsi >= 55 {
 			rsiData.Rsi55Days++
+		}
+		if index > highIndex {
+			if rsi > High2NowLow {
+				High2NowLow = rsi
+			}
 		}
 	}
 	rsiData.Message = fmt.Sprintf("数据%d天, "+
