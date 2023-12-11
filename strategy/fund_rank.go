@@ -24,9 +24,10 @@ func FundRank() []*constant.Fund {
 	list := make([]*constant.Fund, 0)
 	fundRank1 := rank(1)
 	fundRank3 := rank(3)
-	//fundRank12 := rank(12)
-	list = append(list, fundRank3...)
+	fundRank6 := rank(6)
 	list = append(list, fundRank1...)
+	list = append(list, fundRank3...)
+	list = append(list, fundRank6...)
 	//list = append(list, fundRank12...)
 	for _, fund := range list {
 		if fundMap[fund.Code] == nil {
@@ -51,7 +52,7 @@ func FundRank() []*constant.Fund {
 			pages = make([]*constant.Fund, 0)
 		}
 	}
-	result = topN(result, 3)
+	result = topN(result, 5)
 	return result
 }
 
@@ -131,9 +132,13 @@ func filter(funds []*constant.Fund) []*constant.Fund {
 		if fund.Scale > 50 {
 			continue
 		}
-
 		retracement, err := strconv.ParseFloat(fund.Retracement, 64)
 		if err == nil && retracement < -15 {
+			continue
+		}
+
+		sharpe, err := strconv.ParseFloat(fund.Sharpe, 64)
+		if err == nil && sharpe < 0 {
 			continue
 		}
 
@@ -291,7 +296,7 @@ func sharpeAndRetracement(funds []*constant.Fund) []*constant.Fund {
 	payload := []byte(fmt.Sprintf(`{
     "fund_code": "%s",
     "type": "h5",
- 	"fund_day": 12,
+ 	"fund_day": 6,
     "version": "2.4.8"
 	}`, requestCodes))
 
