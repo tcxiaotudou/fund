@@ -22,11 +22,11 @@ import (
 func FundRank() []*constant.Fund {
 	fundMap := make(map[string]*constant.Fund)
 	list := make([]*constant.Fund, 0)
+	fundRank1 := rank(1)
 	fundRank3 := rank(3)
-	//fundRank6 := rank(6)
 	//fundRank12 := rank(12)
 	list = append(list, fundRank3...)
-	//list = append(list, fundRank6...)
+	list = append(list, fundRank1...)
 	//list = append(list, fundRank12...)
 	for _, fund := range list {
 		if fundMap[fund.Code] == nil {
@@ -37,7 +37,6 @@ func FundRank() []*constant.Fund {
 	for _, fund := range fundMap {
 		list = append(list, fund)
 	}
-
 	pages := make([]*constant.Fund, 0)
 	result := make([]*constant.Fund, 0)
 	for _, fund := range list {
@@ -52,7 +51,7 @@ func FundRank() []*constant.Fund {
 			pages = make([]*constant.Fund, 0)
 		}
 	}
-	result = topN(result, 10)
+	result = topN(result, 3)
 	return result
 }
 
