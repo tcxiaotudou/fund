@@ -5,6 +5,9 @@ import (
 	"founds/constant"
 	"founds/strategy"
 	"gopkg.in/gomail.v2"
+	"log"
+	"sort"
+	"time"
 )
 
 var (
@@ -23,46 +26,46 @@ func main() {
 	result["沪深300风险溢价"] = strategy.Stock300Balance()
 
 	// ETF Rsi
-	//suggestions := make([]constant.Suggest, 0)
-	//for name, code := range constant.EtfGroups {
-	//	time.Sleep(5 * time.Second)
-	//	etfRsiData := strategy.Rsi(code, 14)
-	//	if etfRsiData == nil {
-	//		continue
-	//	}
-	//	log.Printf("(%s,%s), %v\n", name, code, etfRsiData)
-	//	// 离最低点还有大于10天的差距，不做处理
-	//	if etfRsiData.NowToLowDays > 10 {
-	//		continue
-	//	}
-	//	// rsi小于30 或者 rsi离最低点小于5天 或者 rsi小于45 && 最低点大于35 && 最高点大于70
-	//	if (etfRsiData.Now <= 30) ||
-	//		(etfRsiData.High >= 70 && etfRsiData.High2NowLow <= 43 && etfRsiData.High2NowLow >= 38) {
-	//		rsiList[name+"("+code+")"] = etfRsiData
-	//		// 纳入购买建议
-	//		suggestion := constant.Suggest{
-	//			CodeName: name + "(" + code + ")",
-	//			Now:      etfRsiData.Now,
-	//			Interval: fmt.Sprintf("(%s, %s, %s, %s)",
-	//				fmt.Sprintf("%.2f", etfRsiData.High),
-	//				fmt.Sprintf("%.2f", etfRsiData.TwoThirds),
-	//				fmt.Sprintf("%.2f", etfRsiData.OneThirds),
-	//				fmt.Sprintf("%.2f", etfRsiData.Low)),
-	//			Remark: etfRsiData.Message,
-	//			Time:   time.Now().Format("2006-01-02 15:04:05"),
-	//		}
-	//		suggestions = append(suggestions, suggestion)
-	//	}
-	//}
-	//
-	//sort.Slice(suggestions, func(i, j int) bool {
-	//	return suggestions[i].Now < suggestions[j].Now
-	//})
+	suggestions := make([]constant.Suggest, 0)
+	for name, code := range constant.EtfGroups {
+		time.Sleep(5 * time.Second)
+		etfRsiData := strategy.Rsi(code, 14)
+		if etfRsiData == nil {
+			continue
+		}
+		log.Printf("(%s,%s), %v\n", name, code, etfRsiData)
+		// 离最低点还有大于10天的差距，不做处理
+		if etfRsiData.NowToLowDays > 10 {
+			continue
+		}
+		// rsi小于30 或者 rsi离最低点小于5天 或者 rsi小于45 && 最低点大于35 && 最高点大于70
+		if (etfRsiData.Now <= 30) ||
+			(etfRsiData.High >= 70 && etfRsiData.High2NowLow <= 43 && etfRsiData.High2NowLow >= 38) {
+			rsiList[name+"("+code+")"] = etfRsiData
+			// 纳入购买建议
+			suggestion := constant.Suggest{
+				CodeName: name + "(" + code + ")",
+				Now:      etfRsiData.Now,
+				Interval: fmt.Sprintf("(%s, %s, %s, %s)",
+					fmt.Sprintf("%.2f", etfRsiData.High),
+					fmt.Sprintf("%.2f", etfRsiData.TwoThirds),
+					fmt.Sprintf("%.2f", etfRsiData.OneThirds),
+					fmt.Sprintf("%.2f", etfRsiData.Low)),
+				Remark: etfRsiData.Message,
+				Time:   time.Now().Format("2006-01-02 15:04:05"),
+			}
+			suggestions = append(suggestions, suggestion)
+		}
+	}
+
+	sort.Slice(suggestions, func(i, j int) bool {
+		return suggestions[i].Now < suggestions[j].Now
+	})
 
 	// 推荐基金
 	funds := strategy.FundRank()
 
-	SendMail(funds, nil, result)
+	SendMail(funds, suggestions, result)
 }
 
 /**
