@@ -122,7 +122,7 @@ func SendMail(funds []*constant.Fund, rsiList []constant.Suggest, result map[str
 		<tr>
 			<th>名称</th>
 			<th>规模</th>
-			<th>近一年最大回撤</th>
+			<th>近6个月最大回撤</th>
 			<th>夏普率</th>
 			<th>近3个月收益</th>
 			<th>近6个月收益</th>
