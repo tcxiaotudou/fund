@@ -124,6 +124,7 @@ func SendMail(funds []*constant.Fund, rsiList []constant.Suggest, result map[str
 			<th>规模</th>
 			<th>近6个月最大回撤</th>
 			<th>夏普率</th>
+			<th>近1个月收益</th>
 			<th>近3个月收益</th>
 			<th>近6个月收益</th>
 			<th>近一年收益</th>
@@ -140,11 +141,13 @@ func SendMail(funds []*constant.Fund, rsiList []constant.Suggest, result map[str
 			<td>%s</td>
 			<td>%s</td>
 			<td>%s</td>
+			<td>%s</td>
 			<td>%d</td>
 		  </tr>`, fmt.Sprintf("%s(%s)", fund.Name, fund.Code),
 			fmt.Sprintf("%.2f亿", fund.Scale),
 			fmt.Sprintf("%s%%", fund.Retracement),
 			fund.Sharpe,
+			fmt.Sprintf("%s%%", fund.Yield1),
 			fmt.Sprintf("%s%%", fund.Yield3),
 			fmt.Sprintf("%s%%", fund.Yield6),
 			fmt.Sprintf("%s%%", fund.Yield12),

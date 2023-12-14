@@ -9,6 +9,7 @@ type Fund struct {
 	CreateYears string  `json:"create_years"` // 创建年限
 	Retracement string  `json:"retracement"`  // 近一年最大回撤
 	Sharpe      string  `json:"sharpe"`       // 近一年夏普比率
+	Yield1      string  `json:"yield1"`       // 近1个月收益率
 	Yield3      string  `json:"yield3"`       // 近3个月收益率
 	Yield6      string  `json:"yield6"`       // 近6个月收益率
 	Yield12     string  `json:"yield12"`      // 近一年收益率

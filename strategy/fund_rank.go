@@ -416,6 +416,9 @@ func performence(funds []*constant.Fund) []*constant.Fund {
 				for _, sharpeItem := range sharpeInfo {
 					sharpeMap := sharpeItem.Map()
 					name := sharpeMap["qx"]
+					if name.String() == "近1月" {
+						fund.Yield1 = sharpeMap["num"].String()
+					}
 					if name.String() == "近3月" {
 						fund.Yield3 = sharpeMap["num"].String()
 					}
