@@ -24,10 +24,10 @@ func FundRank() []*constant.Fund {
 	list := make([]*constant.Fund, 0)
 	fundRank1 := rank(1)
 	fundRank3 := rank(3)
-	fundRank6 := rank(6)
+	//fundRank6 := rank(6)
 	list = append(list, fundRank1...)
 	list = append(list, fundRank3...)
-	list = append(list, fundRank6...)
+	//list = append(list, fundRank6...)
 	//list = append(list, fundRank12...)
 	for _, fund := range list {
 		if fundMap[fund.Code] == nil {
@@ -439,11 +439,11 @@ func topN(funds []*constant.Fund, topN int) []*constant.Fund {
 	// 自定义排序规则
 	sort.Slice(funds, func(i, j int) bool {
 		// 先按 Score 从大到小排序
-		if funds[i].Score > funds[j].Score {
-			return true
-		} else if funds[i].Score < funds[j].Score {
-			return false
-		}
+		//if funds[i].Score > funds[j].Score {
+		//	return true
+		//} else if funds[i].Score < funds[j].Score {
+		//	return false
+		//}
 		// 当 Score 相等时，按 Sharpe 从大到小排序
 		return funds[i].Sharpe > funds[j].Sharpe
 	})
