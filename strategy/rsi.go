@@ -15,12 +15,13 @@ import (
 
 // RsiData RSI数据
 type RsiData struct {
-	Days      int     // RSI数据的天数
-	Now       float64 // 当前RSI
-	High      float64 // RSI最高点
-	TwoThirds float64 // RSI平均次高点
-	OneThirds float64 // RSI平均次低点
-	Low       float64 // RSI最低点
+	Days       int     // RSI数据的天数
+	Now        float64 // 当前RSI
+	LatestHigh float64 // RSI最近一次最高点
+	High       float64 // RSI最高点
+	TwoThirds  float64 // RSI平均次高点
+	OneThirds  float64 // RSI平均次低点
+	Low        float64 // RSI最低点
 
 	High2NowLow float64 // RSI最高点 到 当前位置，中间出现的最低点
 
@@ -44,6 +45,7 @@ func Rsi(code string, dayScale int) *RsiData {
 	if rsiArr == nil {
 		return nil
 	}
+	latestHigh := 0.0
 	high := 0.0
 	avg := 0.0
 	low := 100.0
@@ -62,20 +64,34 @@ func Rsi(code string, dayScale int) *RsiData {
 			high = rsi
 			highIndex = index
 		}
+
+		if (index > 0 && index < len(rsiArr)-1) && rsi >= rsiArr[index-1] && rsi >= rsiArr[index+1] {
+			latestHigh = rsi
+		}
 		if rsi < low {
 			low = rsi
 		}
 	}
+
+	if rsiArr[0] >= latestHigh {
+		latestHigh = rsiArr[0]
+	}
+
+	if rsiArr[len(rsiArr)-1] >= latestHigh {
+		latestHigh = rsiArr[len(rsiArr)-1]
+	}
+
 	avg = (high - low) / 3.0
 	rsiData := &RsiData{
-		Days:      len(rsiArr),
-		Now:       rsiArr[len(rsiArr)-1],
-		High:      high,
-		TwoThirds: high - avg,
-		OneThirds: high - 2*avg,
-		Low:       low,
-		Message:   message,
-		Time:      time.Now(),
+		Days:       len(rsiArr),
+		Now:        rsiArr[len(rsiArr)-1],
+		High:       high,
+		LatestHigh: latestHigh,
+		TwoThirds:  high - avg,
+		OneThirds:  high - 2*avg,
+		Low:        low,
+		Message:    message,
+		Time:       time.Now(),
 	}
 	for index, rsi := range rsiArr {
 		if rsi >= rsiData.Low && rsi < rsiData.Now {
@@ -94,7 +110,7 @@ func Rsi(code string, dayScale int) *RsiData {
 			rsiData.Rsi55Days++
 		}
 		if index > highIndex {
-			if rsi > High2NowLow {
+			if rsi < High2NowLow {
 				High2NowLow = rsi
 			}
 		}

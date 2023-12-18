@@ -52,6 +52,16 @@ func FundRank() []*constant.Fund {
 			pages = make([]*constant.Fund, 0)
 		}
 	}
+
+	if len(pages) > 0 {
+		pages = pk(pages)
+		pages = productInfo(pages)
+		pages = sharpeAndRetracement(pages)
+		pages = filter(pages)
+		pages = performence(pages)
+		result = append(result, pages...)
+	}
+
 	result = topN(result, 5)
 	return result
 }
