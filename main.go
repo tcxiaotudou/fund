@@ -128,7 +128,7 @@ func SendMail(funds []*constant.Fund, rsiList []constant.Suggest, result map[str
 			<th>近3个月收益</th>
 			<th>近6个月收益</th>
 			<th>近一年收益</th>
-			<th>评分</th>
+			<th>原因</th>
         </tr>
 	`
 	for _, fund := range funds {
@@ -142,7 +142,7 @@ func SendMail(funds []*constant.Fund, rsiList []constant.Suggest, result map[str
 			<td>%s</td>
 			<td>%s</td>
 			<td>%s</td>
-			<td>%d</td>
+			<td>%s</td>
 		  </tr>`, fmt.Sprintf("%s(%s)", fund.Name, fund.Code),
 			fmt.Sprintf("%.2f亿", fund.Scale),
 			fmt.Sprintf("%s%%", fund.Retracement),
@@ -151,7 +151,7 @@ func SendMail(funds []*constant.Fund, rsiList []constant.Suggest, result map[str
 			fmt.Sprintf("%s%%", fund.Yield3),
 			fmt.Sprintf("%s%%", fund.Yield6),
 			fmt.Sprintf("%s%%", fund.Yield12),
-			fund.Score)
+			fund.Reason)
 		fundContent += content
 	}
 	fundContent += `</table><br/>`
