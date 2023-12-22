@@ -5,7 +5,7 @@ name: Go
 
 on:
   schedule:
-    - cron: '35 6 * * 1-5'
+    - cron: '35 3,6 * * 1-5'
 
 env:
   TZ: Asia/Shanghai
