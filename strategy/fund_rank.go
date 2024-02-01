@@ -15,7 +15,7 @@ import (
 
 /**
 1、过去1个月，过去3个月，过去6个月，过去1年 收益率前20
-2、排除定开，排除规模大于50亿
+2、排除定开，排除规模大于50亿, 排除对冲
 3、进行PK，按得分取前5
 */
 
@@ -137,6 +137,9 @@ func filter(funds []*constant.Fund) []*constant.Fund {
 			continue
 		}
 		if strings.Contains(fund.Name, "持有期") {
+			continue
+		}
+		if strings.Contains(fund.Name, "对冲") {
 			continue
 		}
 		if fund.Scale > 50 {
