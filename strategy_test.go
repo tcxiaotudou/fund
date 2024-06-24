@@ -61,3 +61,7 @@ func TestFundRank(t *testing.T) {
 	list := strategy.FundRank()
 	fmt.Println(list)
 }
+
+func TestM5year(t *testing.T) {
+	fmt.Println(strategy.Ma5y())
+}
