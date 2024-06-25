@@ -46,5 +46,5 @@ func Ma5y() string {
 	// 计算均线
 	movingAverage := sum / 1250
 	diff := (today - movingAverage) / movingAverage * 100
-	return fmt.Sprintf("「%s」 %.2f%", date, diff)
+	return fmt.Sprintf("「%s」 %.2f%%", date, diff)
 }
