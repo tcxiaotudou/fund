@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
 	"founds/constant"
 	"founds/strategy"
@@ -15,6 +16,7 @@ var (
 	result  = map[string]interface{}{}
 )
 
+// hfoyppahdpoudjhe
 func main() {
 	// 行情数据
 	guoZheng14RsiData := strategy.Rsi(constant.GUO_ZHENG, 14)
@@ -63,7 +65,7 @@ func main() {
 	})
 
 	// 推荐基金
-	funds := strategy.FundRank()
+	funds := strategy.FundStrategy()
 
 	SendMail(funds, suggestions, result)
 }
@@ -81,7 +83,7 @@ func main() {
 */
 
 // SendMail 邮件
-func SendMail(funds []*constant.Fund, rsiList []constant.Suggest, result map[string]interface{}) {
+func SendMail(funds []*constant.FundStrategy, rsiList []constant.Suggest, result map[string]interface{}) {
 	// 创建一个新的邮件消息
 	m := gomail.NewMessage()
 	m.SetHeader("From", "2290262044@qq.com")
@@ -121,14 +123,13 @@ func SendMail(funds []*constant.Fund, rsiList []constant.Suggest, result map[str
 		<table border="1" style="border-collapse: collapse;">
 		<tr>
 			<th>名称</th>
+			<th>基金经理</th>
+			<th>管理时长</th>
 			<th>规模</th>
-			<th>近6个月最大回撤</th>
-			<th>夏普率</th>
-			<th>近1个月收益</th>
-			<th>近3个月收益</th>
-			<th>近6个月收益</th>
-			<th>近一年收益</th>
-			<th>原因</th>
+			<th>今年以来收益率</th>
+			<th>近5年年化收益率</th>
+			<th>近5年最大回撤</th>
+			<th>近5年动态回撤</th>
         </tr>
 	`
 	for _, fund := range funds {
@@ -142,16 +143,15 @@ func SendMail(funds []*constant.Fund, rsiList []constant.Suggest, result map[str
 			<td>%s</td>
 			<td>%s</td>
 			<td>%s</td>
-			<td>%s</td>
 		  </tr>`, fmt.Sprintf("%s(%s)", fund.Name, fund.Code),
-			fmt.Sprintf("%.2f亿", fund.Scale),
-			fmt.Sprintf("%s%%", fund.Retracement),
-			fund.Sharpe,
-			fmt.Sprintf("%s%%", fund.Yield1),
-			fmt.Sprintf("%s%%", fund.Yield3),
-			fmt.Sprintf("%s%%", fund.Yield6),
-			fmt.Sprintf("%s%%", fund.Yield12),
-			fund.Reason)
+			fmt.Sprintf("%s", fund.PersonName),
+			fmt.Sprintf("%s", fund.PersonYear),
+			fmt.Sprintf("%s", fund.Gm),
+			fmt.Sprintf("%s", fund.YearTodayIncome),
+			fmt.Sprintf("%s", fund.Year5Income),
+			fmt.Sprintf("%s", fund.HcMaxYear5),
+			fmt.Sprintf("%s", fund.HcCurYear5),
+		)
 		fundContent += content
 	}
 	fundContent += `</table><br/>`
@@ -164,8 +164,16 @@ func SendMail(funds []*constant.Fund, rsiList []constant.Suggest, result map[str
 	content += "</ul>"
 
 	m.SetBody("text/html", content)
+
+	// 解密
+	decodedBytes, err := base64.StdEncoding.DecodeString("aGZveXBwYWhkcG91ZGpoZQ==")
+	if err != nil {
+		panic(err)
+		return
+	}
+	decodedStr := string(decodedBytes)
 	// 创建一个新的SMTP拨号器
-	d := gomail.NewDialer("smtp.qq.com", 587, "2290262044", "ehdrbzzctgvoebec")
+	d := gomail.NewDialer("smtp.qq.com", 587, "2290262044", decodedStr)
 	// 发送邮件
 	if err := d.DialAndSend(m); err != nil {
 		panic(err)
