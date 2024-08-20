@@ -94,7 +94,7 @@ func SendMail(funds []*constant.FundStrategy, rsiList []constant.Suggest, result
 		content = content + fmt.Sprintf("<li>%s: %s</li>", key, value)
 	}
 	content += "</ul>"
-	risContent := `<h4>场内ETF买入建议:</h4><br/>
+	risContent := `<h4>场内ETF机会:</h4><br/>
 		<table border="1" style="border-collapse: collapse;">
 		<tr>
 			<th>名称</th>
@@ -122,35 +122,33 @@ func SendMail(funds []*constant.FundStrategy, rsiList []constant.Suggest, result
 	fundContent := `<h4>场外基金推荐:</h4><br/>
 		<table border="1" style="border-collapse: collapse;">
 		<tr>
+			<th>序号</th>
 			<th>名称</th>
 			<th>基金经理</th>
 			<th>管理时长</th>
 			<th>规模</th>
 			<th>今年以来收益率</th>
 			<th>近5年年化收益率</th>
-			<th>近5年最大回撤</th>
-			<th>近5年动态回撤</th>
         </tr>
 	`
-	for _, fund := range funds {
+	for idx, fund := range funds {
 		content := fmt.Sprintf(`
 		  <tr>
+			<td>%d</td>
 			<td>%s</td>
 			<td>%s</td>
 			<td>%s</td>
 			<td>%s</td>
 			<td>%s</td>
 			<td>%s</td>
-			<td>%s</td>
-			<td>%s</td>
-		  </tr>`, fmt.Sprintf("%s(%s)", fund.Name, fund.Code),
+		  </tr>`,
+			idx+1,
+			fmt.Sprintf("%s(%s)", fund.Name, fund.Code),
 			fmt.Sprintf("%s", fund.PersonName),
 			fmt.Sprintf("%s", fund.PersonYear),
 			fmt.Sprintf("%s", fund.Gm),
 			fmt.Sprintf("%s", fund.YearTodayIncome),
 			fmt.Sprintf("%s", fund.Year5Income),
-			fmt.Sprintf("%s", fund.HcMaxYear5),
-			fmt.Sprintf("%s", fund.HcCurYear5),
 		)
 		fundContent += content
 	}

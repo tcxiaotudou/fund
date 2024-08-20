@@ -10,6 +10,17 @@ import (
 	"net/http"
 )
 
+var existFund = map[string]string{
+	"006567": "中泰星元灵活配置混合A",
+	"121010": "国投瑞银瑞源灵活配置混合A",
+	"161611": "融通内需驱动混合A",
+	"090007": "大成策略回报混合A",
+	"004814": "中欧红利优享混合A",
+	"004475": "华泰柏瑞富利混合A",
+	"260112": "景顺长城能源基建混合A",
+	"519702": "交银趋势混合A",
+}
+
 func FundStrategy() []*constant.FundStrategy {
 	url := "https://api.jiucaishuo.com/v2/fundchoose/result2"
 	method := "POST"
@@ -81,10 +92,13 @@ func FundStrategy() []*constant.FundStrategy {
 				continue
 			}
 			cache[item.PersonName] = "1"
+			_, ok = existFund[fund.Code]
+			if !ok {
+				fund.Name = "**" + fund.Name
+			}
 			list = append(list, fund)
 		}
 	}
-
 	return list
 }
 

@@ -13,4 +13,5 @@ type FundStrategy struct {
 	HcMaxYear5 string `json:"hcMax"` // 近 5 年最大回撤
 	HcCurYear5 string `json:"hcCur"` // 近 5 年当前回撤
 
+	Remark string `json:"remark"` // 备注
 }
