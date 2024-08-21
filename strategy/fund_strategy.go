@@ -8,19 +8,22 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"sort"
+	"strconv"
+	"strings"
 )
 
 // https://data.howbuy.com/cgi/fund/v800z/zjzhchartdthc.json?zhid=67888190128&range=5N
 
 var existFund = map[string]string{
+	"161611": "融通内需驱动混合A",
+	"519702": "交银趋势混合A",
+	"260112": "景顺长城能源基建混合A",
 	"006567": "中泰星元灵活配置混合A",
 	"121010": "国投瑞银瑞源灵活配置混合A",
-	"161611": "融通内需驱动混合A",
+	"004475": "华泰柏瑞富利混合A",
 	"090007": "大成策略回报混合A",
 	"004814": "中欧红利优享混合A",
-	"004475": "华泰柏瑞富利混合A",
-	"260112": "景顺长城能源基建混合A",
-	"519702": "交银趋势混合A",
 }
 
 func FundStrategy() []*constant.FundStrategy {
@@ -77,29 +80,35 @@ func FundStrategy() []*constant.FundStrategy {
 		fundInfo := fundData["list"].Array()
 		item.PersonName = fundInfo[11].Map()["val"].String()
 		item.PersonYear = fundInfo[4].Map()["val"].String()
+		year5Sharpe, _ := strconv.Atoi(strings.Split(fundInfo[6].Map()["val"].String(), "/")[0])
+		item.Year5Sharpe = year5Sharpe
 		item.Gm = fundInfo[1].Map()["val"].String()
 		item.YearTodayIncome = fundInfo[10].Map()["val"].String()
+		item = setRate(item)
+		if item == nil {
+			continue
+		}
 		result = append(result, item)
 	}
 
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Year5Sharpe < result[j].Year5Sharpe
+	})
+
 	list := make([]*constant.FundStrategy, 0)
 
-	// 回撤
+	// 去重
 	for _, fund := range result {
-		// setHc(fund)
-		item := setRate(fund)
-		if item != nil {
-			_, ok := cache[item.PersonName]
-			if ok {
-				continue
-			}
-			cache[item.PersonName] = "1"
-			_, ok = existFund[fund.Code]
-			if !ok {
-				fund.Name = "**" + fund.Name
-			}
-			list = append(list, fund)
+		_, ok := cache[fund.PersonName]
+		if ok {
+			continue
 		}
+		cache[fund.PersonName] = "1"
+		_, ok = existFund[fund.Code]
+		if !ok {
+			fund.Name = "**" + fund.Name
+		}
+		list = append(list, fund)
 	}
 	return list
 }
@@ -228,16 +237,14 @@ func setRate(strategy *constant.FundStrategy) *constant.FundStrategy {
 
 	baseDataArr := gjson.Get(response, "data.fir_header_base_data").Array()
 
-	year5IncomeNumber := 0.0
-
 	for _, baseData := range baseDataArr {
 		if baseData.Map()["data_name"].String() == "年化收益（近5年）" {
 			strategy.Year5Income = baseData.Map()["data_value_str"].String()
-			year5IncomeNumber = baseData.Map()["data_value_number"].Num
+			strategy.Year5IncomeNumber = baseData.Map()["data_value_number"].Num
 		}
 	}
 
-	if year5IncomeNumber < 10 {
+	if strategy.Year5IncomeNumber < 10 {
 		return nil
 	}
 

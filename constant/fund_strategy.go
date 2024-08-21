@@ -8,7 +8,10 @@ type FundStrategy struct {
 	Gm              string `json:"gm"`              // 规模
 	YearTodayIncome string `json:"yearTodayIncome"` // 今年以来收益率
 
-	Year5Income string `json:"year5Income"` // 5年年化收益率
+	Year5Income       string  `json:"year5Income"`       // 5年年化收益率
+	Year5IncomeNumber float64 `json:"year5IncomeNumber"` // 5年年化收益率数值
+
+	Year5Sharpe int `json:"year5Sharpe"` // 近 5 年夏普排名
 
 	HcMaxYear5 string `json:"hcMax"` // 近 5 年最大回撤
 	HcCurYear5 string `json:"hcCur"` // 近 5 年当前回撤
