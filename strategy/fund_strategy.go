@@ -10,6 +10,8 @@ import (
 	"net/http"
 )
 
+// https://data.howbuy.com/cgi/fund/v800z/zjzhchartdthc.json?zhid=67888190128&range=5N
+
 var existFund = map[string]string{
 	"006567": "中泰星元灵活配置混合A",
 	"121010": "国投瑞银瑞源灵活配置混合A",
@@ -226,10 +228,17 @@ func setRate(strategy *constant.FundStrategy) *constant.FundStrategy {
 
 	baseDataArr := gjson.Get(response, "data.fir_header_base_data").Array()
 
+	year5IncomeNumber := 0.0
+
 	for _, baseData := range baseDataArr {
 		if baseData.Map()["data_name"].String() == "年化收益（近5年）" {
 			strategy.Year5Income = baseData.Map()["data_value_str"].String()
+			year5IncomeNumber = baseData.Map()["data_value_number"].Num
 		}
+	}
+
+	if year5IncomeNumber < 10 {
+		return nil
 	}
 
 	return strategy
