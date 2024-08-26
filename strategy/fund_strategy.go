@@ -19,7 +19,7 @@ var existFund = map[string]string{
 	"161611": "融通内需驱动混合A",
 	"519702": "交银趋势混合A",
 	"260112": "景顺长城能源基建混合A",
-	"006567": "中泰星元灵活配置混合A",
+	"006624": "中泰玉衡价值优选混合A",
 	"121010": "国投瑞银瑞源灵活配置混合A",
 	"004475": "华泰柏瑞富利混合A",
 	"090007": "大成策略回报混合A",
@@ -31,7 +31,7 @@ func FundStrategy() []*constant.FundStrategy {
 	method := "POST"
 
 	payload := []byte(`{
-        "condition_id": "2196916"
+        "condition_id": "2199957"
     }`)
 
 	client := &http.Client{}
@@ -78,12 +78,12 @@ func FundStrategy() []*constant.FundStrategy {
 		item.Name = fundName
 		item.Code = fundCode
 		fundInfo := fundData["list"].Array()
-		item.PersonName = fundInfo[11].Map()["val"].String()
-		item.PersonYear = fundInfo[4].Map()["val"].String()
-		year5Sharpe, _ := strconv.Atoi(strings.Split(fundInfo[6].Map()["val"].String(), "/")[0])
+		item.PersonName = fundInfo[10].Map()["val"].String()
+		item.PersonYear = fundInfo[3].Map()["val"].String()
+		year5Sharpe, _ := strconv.Atoi(strings.Split(fundInfo[5].Map()["val"].String(), "/")[0])
 		item.Year5Sharpe = year5Sharpe
 		item.Gm = fundInfo[1].Map()["val"].String()
-		item.YearTodayIncome = fundInfo[10].Map()["val"].String()
+		item.YearTodayIncome = fundInfo[9].Map()["val"].String()
 		item = setRate(item)
 		if item == nil {
 			continue

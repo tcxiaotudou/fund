@@ -68,5 +68,8 @@ func TestM5year(t *testing.T) {
 
 func TestFundStrategy(t *testing.T) {
 	fundStrategy := strategy.FundStrategy()
-	fmt.Println(fundStrategy)
+	for _, c := range fundStrategy {
+		fmt.Println(c.Name)
+	}
+
 }
