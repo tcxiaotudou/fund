@@ -110,6 +110,20 @@ func FundStrategy() []*constant.FundStrategy {
 		}
 		list = append(list, fund)
 	}
+
+	for existCode, existName := range existFund {
+		isDelete := true
+		for _, strategy := range list {
+			if existCode == strategy.Code {
+				isDelete = false
+			}
+		}
+		if isDelete {
+			deleteFund := &constant.FundStrategy{Code: existCode, Name: "xx" + existName}
+			list = append(list, deleteFund)
+		}
+	}
+
 	return list
 }
 
