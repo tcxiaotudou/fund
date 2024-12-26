@@ -7,6 +7,7 @@ import (
 	"github.com/tidwall/gjson"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"sort"
 	"strconv"
@@ -48,19 +49,20 @@ func FundStrategy() []*constant.FundStrategy {
 
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return nil
 	}
 	defer res.Body.Close()
 
 	responseBody, err := io.ReadAll(res.Body)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return nil
 	}
 	response := string(responseBody)
 
 	if err != nil || gjson.Get(response, "code").Int() != 0 {
+		log.Println(response)
 		return nil
 	}
 
@@ -242,10 +244,12 @@ func setRate(strategy *constant.FundStrategy) *constant.FundStrategy {
 
 	response := string(responseBody)
 	if err != nil || gjson.Get(response, "result_code").Int() != 0 {
+		log.Println(response)
 		return strategy
 	}
 
 	if gjson.Get(response, "data.declare_status").String() == "0" {
+		log.Println(response)
 		return nil
 	}
 
