@@ -2,7 +2,6 @@ package strategy
 
 import (
 	"bytes"
-	"fmt"
 	"founds/constant"
 	"github.com/tidwall/gjson"
 	"io"
@@ -18,12 +17,12 @@ import (
 
 var existFund = map[string]string{
 	"161611": "融通内需驱动混合A",
-	"519702": "交银趋势混合A",
+	"001564": "东方红京东大数据混合A",
 	"260112": "景顺长城能源基建混合A",
 	"006624": "中泰玉衡价值优选混合A",
 	"121010": "国投瑞银瑞源灵活配置混合A",
 	"004475": "华泰柏瑞富利混合A",
-	"090007": "大成策略回报混合A",
+	"090013": "大成竞争优势混合A",
 	"004814": "中欧红利优享混合A",
 }
 
@@ -38,7 +37,7 @@ func FundStrategy() []*constant.FundStrategy {
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(payload))
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return nil
 	}
 	req.Header.Add("priority", "u=1, i")
@@ -129,101 +128,12 @@ func FundStrategy() []*constant.FundStrategy {
 	return list
 }
 
-func setHc(strategy *constant.FundStrategy) *constant.FundStrategy {
-	url := "https://api.jiucaishuo.com/fundetail/details/showhc"
-	//currentTime := time.Now()
-	//milliseconds := currentTime.UnixNano() / int64(time.Millisecond)
-
-	request := fmt.Sprintf(`{
-        "date": 60,
-    "ben": "",
-    "search_code": "",
-    "is_jl": "",
-    "s_time": "",
-    "e_time": "",
-    "fund_code": "%s",
-    "type": "h5",
-    "version": "2.5.6",
-    "authtoken": "FRfWjc2EFWmDZ55cIm4xat7RaBA3Tl1p",
-    "ss": "",
-    "act_time": %d,
-    "tirgkjfs": "b9",
-    "abiokytke": "c0",
-    "u54rg5d": "2c",
-    "kf54ge7": "d",
-    "tiklsktr4": "9",
-    "lksytkjh": "aa83",
-    "sbnoywr": "4e",
-    "bgd7h8tyu54": "e8",
-    "y654b5fs3tr": "9",
-    "bioduytlw": "5",
-    "bd4uy742": "5",
-    "h67456y": "9aa",
-    "bvytikwqjk": "e8",
-    "ngd4uy551": "aa",
-    "bgiuytkw": "44",
-    "nd354uy4752": "a",
-    "ghtoiutkmlg": "9de",
-    "bd24y6421f": "e9",
-    "tbvdiuytk": "9",
-    "ibvytiqjek": "5f",
-    "jnhf8u5231": "44",
-    "fjlkatj": "2c7",
-    "hy5641d321t": "95",
-    "iogojti": "9",
-    "ngd4yut78": "de",
-    "nkjhrew": "5",
-    "yt447e13f": "7",
-    "n3bf4uj7y7": "a",
-    "nbf4uj7y432": "c0",
-    "yi854tew": "1a",
-    "h13ey474": "1ad",
-    "quikgdky": "3c"
-}`, strategy.Code, 1723991849512)
-
-	payload := []byte(request)
-
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
-	if err != nil {
-		fmt.Println(err)
-		return strategy
-	}
-
-	req.Header.Set("priority", "u=1, i")
-	req.Header.Set("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Accept", "*/*")
-	req.Header.Set("Host", "api.jiucaishuo.com")
-	req.Header.Set("Connection", "keep-alive")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		fmt.Println(err)
-		return strategy
-	}
-	defer resp.Body.Close()
-
-	responseBody, _ := ioutil.ReadAll(resp.Body)
-
-	response := string(responseBody)
-	if err != nil || gjson.Get(response, "code").Int() != 0 {
-		return strategy
-	}
-
-	maxHc := gjson.Get(response, "data.max_hc").String()
-	curHc := gjson.Get(response, "data.cur_hc").String()
-	strategy.HcCurYear5 = curHc
-	strategy.HcMaxYear5 = maxHc
-	return strategy
-}
-
 func setRate(strategy *constant.FundStrategy) *constant.FundStrategy {
 	url := "https://danjuanfunds.com/djapi/fund/" + strategy.Code
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return strategy
 	}
 
@@ -235,7 +145,7 @@ func setRate(strategy *constant.FundStrategy) *constant.FundStrategy {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return strategy
 	}
 	defer resp.Body.Close()
