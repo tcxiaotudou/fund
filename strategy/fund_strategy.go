@@ -27,6 +27,7 @@ var existFund = map[string]string{
 }
 
 func FundStrategy() []*constant.FundStrategy {
+	log.Println("获取精选策略开始...")
 	url := "https://api.jiucaishuo.com/v2/fundchoose/result2"
 	method := "POST"
 
@@ -55,10 +56,13 @@ func FundStrategy() []*constant.FundStrategy {
 
 	responseBody, err := io.ReadAll(res.Body)
 	if err != nil {
+		log.Printf("获取精选策略失败: %s\n", responseBody)
 		log.Println(err)
 		return nil
 	}
 	response := string(responseBody)
+
+	log.Printf("获取精选策略结束: %s \n", response)
 
 	if err != nil || gjson.Get(response, "code").Int() != 0 {
 		log.Println(response)
@@ -129,6 +133,7 @@ func FundStrategy() []*constant.FundStrategy {
 }
 
 func setRate(strategy *constant.FundStrategy) *constant.FundStrategy {
+	log.Printf("获取雪球收益率开始: %s \n", strategy.Code)
 	url := "https://danjuanfunds.com/djapi/fund/" + strategy.Code
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -153,6 +158,7 @@ func setRate(strategy *constant.FundStrategy) *constant.FundStrategy {
 	responseBody, _ := ioutil.ReadAll(resp.Body)
 
 	response := string(responseBody)
+	log.Printf("获取雪球收益率结束: %s \n", response)
 	if err != nil || gjson.Get(response, "result_code").Int() != 0 {
 		log.Println(response)
 		return strategy
