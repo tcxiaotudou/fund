@@ -23,7 +23,7 @@ var existFund = map[string]string{
 	"121010": "国投瑞银瑞源灵活配置混合A",
 	"004475": "华泰柏瑞富利混合A",
 	"090013": "大成竞争优势混合A",
-	"004814": "中欧红利优享混合A",
+	"008271": "大成优势企业混合A",
 }
 
 func FundStrategy() []*constant.FundStrategy {
@@ -96,6 +96,7 @@ func FundStrategy() []*constant.FundStrategy {
 		result = append(result, item)
 	}
 
+	// 按近 5 年夏普排名
 	sort.Slice(result, func(i, j int) bool {
 		return result[i].Year5Sharpe < result[j].Year5Sharpe
 	})
@@ -166,7 +167,7 @@ func setRate(strategy *constant.FundStrategy) *constant.FundStrategy {
 
 	if gjson.Get(response, "data.declare_status").String() == "0" {
 		log.Println(response)
-		return nil
+		return strategy
 	}
 
 	baseDataArr := gjson.Get(response, "data.fir_header_base_data").Array()
