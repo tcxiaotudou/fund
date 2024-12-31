@@ -17,7 +17,7 @@ import (
 
 var existFund = map[string]string{
 	"161611": "融通内需驱动混合A",
-	"001564": "东方红京东大数据混合A",
+	"004814": "中欧红利优享混合A",
 	"260112": "景顺长城能源基建混合A",
 	"006624": "中泰玉衡价值优选混合A",
 	"121010": "国投瑞银瑞源灵活配置混合A",
@@ -167,7 +167,7 @@ func setRate(strategy *constant.FundStrategy) *constant.FundStrategy {
 
 	if gjson.Get(response, "data.declare_status").String() == "0" {
 		log.Println(response)
-		return strategy
+		return nil
 	}
 
 	baseDataArr := gjson.Get(response, "data.fir_header_base_data").Array()
