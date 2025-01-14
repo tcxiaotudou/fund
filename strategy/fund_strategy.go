@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"bytes"
+	"fmt"
 	"founds/constant"
 	"github.com/tidwall/gjson"
 	"io"
@@ -89,7 +90,7 @@ func FundStrategy() []*constant.FundStrategy {
 		item.Year5Sharpe = year5Sharpe
 		item.Gm = fundInfo[1].Map()["val"].String()
 		item.YearTodayIncome = fundInfo[9].Map()["val"].String()
-		item = setRate(item)
+		item = setFundRate(item)
 		if item == nil {
 			continue
 		}
@@ -182,6 +183,88 @@ func setRate(strategy *constant.FundStrategy) *constant.FundStrategy {
 	if strategy.Year5IncomeNumber < 10 {
 		return nil
 	}
+
+	return strategy
+}
+
+func setFundRate(strategy *constant.FundStrategy) *constant.FundStrategy {
+	log.Printf("获取韭圈收益率开始: %s \n", strategy.Code)
+	url := "https://api.jiucaishuo.com/fundetail/details/fundinfo"
+	method := "POST"
+	payload := []byte(fmt.Sprintf(`{
+					"fund_code": "%s",
+					"type": "h5",
+					"version": "2.5.6"
+					}`, strategy.Code))
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(payload))
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	req.Header.Add("priority", "u=1, i")
+	req.Header.Add("content-type", "application/json")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "api.jiucaishuo.com")
+	req.Header.Add("Connection", "keep-alive")
+	res, err := client.Do(req)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	defer res.Body.Close()
+
+	responseBody, _ := ioutil.ReadAll(res.Body)
+
+	response := string(responseBody)
+	log.Printf("获取韭圈收益率结束: %s \n", response)
+	if err != nil || gjson.Get(response, "code").Int() != 0 {
+		log.Println(response)
+		return strategy
+	}
+
+	if strings.Contains(gjson.Get(response, "data.sx").String(), "暂停") {
+		log.Println(response)
+		return nil
+	}
+
+	// ----------
+	url = "https://api.jiucaishuo.com/fundetail/details/earn-line"
+	payload = []byte(fmt.Sprintf(`{
+					"fund_code": "%s",
+					"type": "h5",
+					"date": 60,
+					"version": "2.5.6"
+					}`, strategy.Code))
+
+	req, err = http.NewRequest(method, url, bytes.NewBuffer(payload))
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	req.Header.Add("priority", "u=1, i")
+	req.Header.Add("content-type", "application/json")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "api.jiucaishuo.com")
+	req.Header.Add("Connection", "keep-alive")
+	res, err = client.Do(req)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	defer res.Body.Close()
+
+	responseBody, _ = ioutil.ReadAll(res.Body)
+	response = string(responseBody)
+	year5IncomeNumber := gjson.Get(response, "data.year_income").Float()
+
+	if year5IncomeNumber < 10 {
+		return nil
+	}
+
+	strategy.Year5IncomeNumber = year5IncomeNumber
+	strategy.Year5Income = fmt.Sprintf("%.2f%%", year5IncomeNumber)
 
 	return strategy
 }
