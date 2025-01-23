@@ -6,6 +6,7 @@ import (
 	"founds/constant"
 	"io"
 	"log"
+	"math"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -15,13 +16,12 @@ import (
 
 // RsiData RSI数据
 type RsiData struct {
-	Days       int     // RSI数据的天数
-	Now        float64 // 当前RSI
-	LatestHigh float64 // RSI最近一次最高点
-	High       float64 // RSI最高点
-	TwoThirds  float64 // RSI平均次高点
-	OneThirds  float64 // RSI平均次低点
-	Low        float64 // RSI最低点
+	Days      int     // RSI数据的天数
+	Now       float64 // 当前RSI
+	High      float64 // RSI最高点
+	TwoThirds float64 // RSI平均次高点
+	OneThirds float64 // RSI平均次低点
+	Low       float64 // RSI最低点
 
 	High2NowLow float64 // RSI最高点 到 当前位置，中间出现的最低点
 
@@ -45,14 +45,13 @@ func Rsi(code string, dayScale int) *RsiData {
 	if rsiArr == nil {
 		return nil
 	}
-	latestHigh := 0.0
 	high := 0.0
 	avg := 0.0
 	low := 100.0
 	High2NowLow := 100.0
 	// 忽略前20个元素
-	rsiArr = rsiArr[20:]
-	if len(rsiArr) < 10 {
+	rsiArr = rsiArr[dayScale:]
+	if len(rsiArr) < dayScale {
 		return nil
 	}
 	var highIndex int
@@ -65,33 +64,21 @@ func Rsi(code string, dayScale int) *RsiData {
 			highIndex = index
 		}
 
-		if (index > 0 && index < len(rsiArr)-1) && rsi >= rsiArr[index-1] && rsi >= rsiArr[index+1] {
-			latestHigh = rsi
-		}
 		if rsi < low {
 			low = rsi
 		}
 	}
 
-	if rsiArr[0] >= latestHigh {
-		latestHigh = rsiArr[0]
-	}
-
-	if rsiArr[len(rsiArr)-1] >= latestHigh {
-		latestHigh = rsiArr[len(rsiArr)-1]
-	}
-
 	avg = (high - low) / 3.0
 	rsiData := &RsiData{
-		Days:       len(rsiArr),
-		Now:        rsiArr[len(rsiArr)-1],
-		High:       high,
-		LatestHigh: latestHigh,
-		TwoThirds:  high - avg,
-		OneThirds:  high - 2*avg,
-		Low:        low,
-		Message:    message,
-		Time:       time.Now(),
+		Days:      len(rsiArr),
+		Now:       rsiArr[len(rsiArr)-1],
+		High:      high,
+		TwoThirds: high - avg,
+		OneThirds: high - 2*avg,
+		Low:       low,
+		Message:   message,
+		Time:      time.Now(),
 	}
 	for index, rsi := range rsiArr {
 		if rsi >= rsiData.Low && rsi < rsiData.Now {
@@ -115,6 +102,7 @@ func Rsi(code string, dayScale int) *RsiData {
 			}
 		}
 	}
+	rsiData.High2NowLow = High2NowLow
 	rsiData.Message = fmt.Sprintf("数据%d天, "+
 		"70以上有%d天, "+
 		"65以上有%d天, "+
@@ -128,7 +116,7 @@ func Rsi(code string, dayScale int) *RsiData {
 func rsiArray(code string, dayScale int) []float64 {
 	defaultDay := 201
 	if dayScale > defaultDay/3 {
-		defaultDay = dayScale * 4
+		defaultDay = dayScale * 11
 	}
 	url := fmt.Sprintf("https://quotes.sina.cn/cn/api/jsonp_v2.php/=/CN_MarketDataService.getKLineData?symbol=%s&scale=120&ma=no&datalen=%d", code, defaultDay)
 	response, err := http.Get(url)
@@ -168,90 +156,63 @@ func rsiArray(code string, dayScale int) []float64 {
 		rsiData = append(rsiData, float)
 		Date = data.Date
 	}
-	rsi := calRsi(rsiData, dayScale)
+	rsi := calculateRSI(rsiData, dayScale)
 	return rsi
 }
 
-// calRsi 根据收盘价和间隔计算RSI
-func calRsi(inReal []float64, inTimePeriod int) []float64 {
-	outReal := make([]float64, len(inReal))
-	if len(inReal) < inTimePeriod {
-		return outReal
+// 计算 RSI
+func calculateRSI(prices []float64, period int) []float64 {
+	if len(prices) < period {
+		return []float64{}
 	}
-	if inTimePeriod < 2 {
-		return outReal
-	}
-	// variable declarations
-	tempValue1 := 0.0
-	tempValue2 := 0.0
-	outIdx := inTimePeriod
-	today := 0
-	prevValue := inReal[today]
-	prevGain := 0.0
-	prevLoss := 0.0
-	today++
 
-	for i := inTimePeriod; i > 0; i-- {
-		tempValue1 = inReal[today]
-		today++
-		tempValue2 = tempValue1 - prevValue
-		prevValue = tempValue1
-		if tempValue2 < 0 {
-			prevLoss -= tempValue2
+	var gains, losses, rsi []float64
+
+	// 计算每日涨跌幅
+	for i := 1; i < len(prices); i++ {
+		change := prices[i] - prices[i-1]
+		if change > 0 {
+			gains = append(gains, change)
+			losses = append(losses, 0)
 		} else {
-			prevGain += tempValue2
+			gains = append(gains, 0)
+			losses = append(losses, -change)
 		}
 	}
 
-	prevLoss /= float64(inTimePeriod)
-	prevGain /= float64(inTimePeriod)
+	// 填充前期空值
+	for i := 0; i < period-1; i++ {
+		rsi = append(rsi, 0)
+	}
 
-	if today > 0 {
-		tempValue1 = prevGain + prevLoss
-		if !((-0.00000000000001 < tempValue1) && (tempValue1 < 0.00000000000001)) {
-			outReal[outIdx] = 100.0 * (prevGain / tempValue1)
-		} else {
-			outReal[outIdx] = 0.0
-		}
-		outIdx++
-	} else {
-		for today < 0 {
-			tempValue1 = inReal[today]
-			tempValue2 = tempValue1 - prevValue
-			prevValue = tempValue1
-			prevLoss *= float64(inTimePeriod - 1)
-			prevGain *= float64(inTimePeriod - 1)
-			if tempValue2 < 0 {
-				prevLoss -= tempValue2
-			} else {
-				prevGain += tempValue2
-			}
-			prevLoss /= float64(inTimePeriod)
-			prevGain /= float64(inTimePeriod)
-			today++
-		}
+	// 计算第一个RSI值
+	avgGain := sumSlice(gains[:period]) / float64(period)
+	avgLoss := sumSlice(losses[:period]) / float64(period)
+	rs := avgGain / (avgLoss + math.SmallestNonzeroFloat64)
+	rsi = append(rsi, toFixed(100-(100/(1+rs)), 2))
+
+	// 计算后续的RSI值
+	for i := period; i < len(gains); i++ {
+		avgGain = ((avgGain * float64(period-1)) + gains[i]) / float64(period)
+		avgLoss = ((avgLoss * float64(period-1)) + losses[i]) / float64(period)
+		rs = avgGain / (avgLoss + math.SmallestNonzeroFloat64)
+		rsi = append(rsi, toFixed(100-(100/(1+rs)), 2))
 	}
-	for today < len(inReal) {
-		tempValue1 = inReal[today]
-		today++
-		tempValue2 = tempValue1 - prevValue
-		prevValue = tempValue1
-		prevLoss *= float64(inTimePeriod - 1)
-		prevGain *= float64(inTimePeriod - 1)
-		if tempValue2 < 0 {
-			prevLoss -= tempValue2
-		} else {
-			prevGain += tempValue2
-		}
-		prevLoss /= float64(inTimePeriod)
-		prevGain /= float64(inTimePeriod)
-		tempValue1 = prevGain + prevLoss
-		if !((-0.00000000000001 < tempValue1) && (tempValue1 < 0.00000000000001)) {
-			outReal[outIdx] = 100.0 * (prevGain / tempValue1)
-		} else {
-			outReal[outIdx] = 0.0
-		}
-		outIdx++
+
+	return rsi
+}
+
+// 计算切片的总和
+func sumSlice(slice []float64) float64 {
+	sum := 0.0
+	for _, value := range slice {
+		sum += value
 	}
-	return outReal
+	return sum
+}
+
+// 保留指定小数位数
+func toFixed(num float64, precision int) float64 {
+	output := math.Pow(10, float64(precision))
+	return math.Round(num*output) / output
 }

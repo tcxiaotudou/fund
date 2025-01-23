@@ -47,24 +47,30 @@ func Stock300Balance() (value string) {
 	return strconv.FormatFloat(data["percent"].(float64), 'f', -1, 64) + "%"
 }
 
-// RsiStockBalance 14日RSI股债平衡建议
+/*
+*
+90日RSI股债平衡建议
+90 日 RSI 大多数时间在43 点(红色水平线)和 57 点(淡绿色水平线)之前盘整，泡沫大牛市会冲到 70 点
+*/
 func RsiStockBalance(rsi14 float64) string {
 	if rsi14 < 30 {
-		return "9股1债"
+		return "10股0债"
 	} else if rsi14 >= 30 && rsi14 < 35 {
+		return "9股1债"
+	} else if rsi14 >= 35 && rsi14 < 43 {
 		return "8股2债"
-	} else if rsi14 >= 35 && rsi14 < 40 {
+	} else if rsi14 >= 43 && rsi14 < 47.5 {
 		return "7股3债"
-	} else if rsi14 >= 40 && rsi14 < 50 {
+	} else if rsi14 >= 47.5 && rsi14 < 52 {
+		return "6股4债"
+	} else if rsi14 >= 52 && rsi14 < 56.5 {
 		return "5股5债"
-	} else if rsi14 >= 50 && rsi14 < 55 {
+	} else if rsi14 >= 56.5 && rsi14 < 61 {
 		return "4股6债"
-	} else if rsi14 >= 55 && rsi14 < 60 {
+	} else if rsi14 >= 61 && rsi14 < 65.5 {
 		return "3股7债"
-	} else if rsi14 >= 60 && rsi14 < 65 {
+	} else if rsi14 >= 65.5 {
 		return "2股8债"
-	} else if rsi14 >= 65 {
-		return "1股9债"
 	}
 	return ""
 }

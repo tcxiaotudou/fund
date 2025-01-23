@@ -20,10 +20,10 @@ var (
 func main() {
 	// 行情数据
 	guoZheng14RsiData := strategy.Rsi(constant.GUO_ZHENG, 14)
-	result[fmt.Sprintf("14日RSI（%s）", guoZheng14RsiData.Message)] = fmt.Sprintf("%.2f", guoZheng14RsiData.Now)
+	result[fmt.Sprintf("14日RSI（30点以下买买买）")] = fmt.Sprintf("%.2f", guoZheng14RsiData.Now)
 	guoZheng90RsiData := strategy.Rsi(constant.GUO_ZHENG, 90)
-	result["90日RSI（57 点和 70 点卖）"] = fmt.Sprintf("%.2f", guoZheng90RsiData.Now)
-	result["股债平衡建议"] = strategy.RsiStockBalance(guoZheng90RsiData.Now)
+	result["90日RSI（57 点和 70 再平衡）"] = fmt.Sprintf("%.2f", guoZheng90RsiData.Now)
+	result["当前股债再平衡建议"] = strategy.RsiStockBalance(guoZheng90RsiData.Now)
 	result["5年均线"] = strategy.Ma5y()
 	result["沪深300风险溢价"] = strategy.Stock300Balance()
 
