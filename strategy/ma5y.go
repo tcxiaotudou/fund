@@ -52,9 +52,11 @@ func Ma5y() string {
 	}
 
 	prices := make([]float64, 0)
+	var date = ""
 	for _, item := range indexs {
 		closeNum, _ := strconv.ParseFloat(item.Close, 64)
 		prices = append(prices, closeNum)
+		date = item.Date
 	}
 
 	period := 1250
@@ -68,5 +70,5 @@ func Ma5y() string {
 	deviation := calculateDeviation(todayClosePrice, sma)
 	// fmt.Printf("今天收盘价与 1250 日均线的偏离度: %.2f%%", deviation)
 
-	return fmt.Sprintf("%.2f%%", deviation)
+	return fmt.Sprintf("「%s」 %.2f%%", date, deviation)
 }
