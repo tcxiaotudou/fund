@@ -114,6 +114,12 @@ func Rsi(code string, dayScale int) *RsiData {
 
 // rsiArray 获取rsi数组数据
 func rsiArray(code string, dayScale int) []float64 {
+	prices := getPrices(code, dayScale)
+	rsi := calculateRSI(prices, dayScale)
+	return rsi
+}
+
+func getPrices(code string, dayScale int) []float64 {
 	defaultDay := 201
 	if dayScale > defaultDay/3 {
 		defaultDay = dayScale * 11
@@ -143,7 +149,7 @@ func rsiArray(code string, dayScale int) []float64 {
 		log.Println("json unmarshal error:", err)
 		return nil
 	}
-	rsiData := make([]float64, 0)
+	prices := make([]float64, 0)
 	for i, data := range index {
 		if i != len(index)-1 && !strings.Contains(data.Date, "15:00:00") {
 			continue
@@ -153,16 +159,15 @@ func rsiArray(code string, dayScale int) []float64 {
 			log.Println("strconv parseFloat error:", err)
 			return nil
 		}
-		rsiData = append(rsiData, float)
+		prices = append(prices, float)
 		Date = data.Date
 	}
-	rsi := calculateRSI(rsiData, dayScale)
-	return rsi
+	return prices
 }
 
 // 计算 RSI
 func calculateRSI(prices []float64, period int) []float64 {
-	if len(prices) < period {
+	if prices == nil || len(prices) < period {
 		return []float64{}
 	}
 

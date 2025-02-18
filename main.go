@@ -12,21 +12,21 @@ import (
 )
 
 var (
-	rsiList = map[string]*strategy.RsiData{}
-	result  = map[string]interface{}{}
+	rsiList        = map[string]*strategy.RsiData{}
+	suggestionList = make([]string, 0)
 )
 
 // hfoyppahdpoudjhe
 func main() {
 	// 行情数据
 	guoZheng14RsiData := strategy.Rsi(constant.GUO_ZHENG, 14)
-	result[fmt.Sprintf("14日RSI（30点以下买买买）")] = fmt.Sprintf("%.2f", guoZheng14RsiData.Now)
+	suggestionList = append(suggestionList, "14日RSI（30点以下买买买）"+":"+fmt.Sprintf("%.2f", guoZheng14RsiData.Now))
 	guoZheng90RsiData := strategy.Rsi(constant.GUO_ZHENG, 90)
-	result["90日RSI（57 点和 70 再平衡）"] = fmt.Sprintf("%.2f", guoZheng90RsiData.Now)
-	result["当前股债再平衡建议"] = strategy.RsiStockBalance(guoZheng90RsiData.Now)
-	result["5年均线"] = strategy.Ma5y()
-	result["沪深300风险溢价"] = strategy.Stock300Balance()
-
+	suggestionList = append(suggestionList, "90日RSI（57 点和 70 再平衡）"+":"+fmt.Sprintf("%.2f", guoZheng90RsiData.Now))
+	suggestionList = append(suggestionList, "沪深300风险溢价"+":"+strategy.Stock300Balance())
+	suggestionList = append(suggestionList, "当前股债再平衡建议"+":"+strategy.RsiStockBalance(guoZheng90RsiData.Now))
+	suggestionList = append(suggestionList, "5年均线"+":"+strategy.Ma5y())
+	suggestionList = append(suggestionList, "场内ETF组合"+":"+strategy.EtfPortfolioRsi())
 	// ETF Rsi
 	suggestions := make([]constant.Suggest, 0)
 	for name, code := range constant.EtfGroups {
@@ -67,7 +67,7 @@ func main() {
 	// 推荐基金
 	funds := strategy.FundStrategy()
 
-	SendMail(funds, suggestions, result)
+	SendMail(funds, suggestions, suggestionList)
 }
 
 /**
@@ -83,15 +83,15 @@ func main() {
 */
 
 // SendMail 邮件
-func SendMail(funds []*constant.FundStrategy, rsiList []constant.Suggest, result map[string]interface{}) {
+func SendMail(funds []*constant.FundStrategy, rsiList []constant.Suggest, result []string) {
 	// 创建一个新的邮件消息
 	m := gomail.NewMessage()
 	m.SetHeader("From", "2290262044@qq.com")
 	m.SetHeader("To", "2290262044@qq.com")
 	m.SetHeader("Subject", fmt.Sprintf("每日行情（%s）", strategy.Date))
 	content := "<h4>行情数据：</h4><ul>"
-	for key, value := range result {
-		content = content + fmt.Sprintf("<li>%s: %s</li>", key, value)
+	for _, value := range result {
+		content = content + fmt.Sprintf("<li>%s</li>", value)
 	}
 	content += "</ul>"
 	risContent := `<h4>场内ETF机会:</h4><br/>
