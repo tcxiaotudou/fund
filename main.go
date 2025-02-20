@@ -30,7 +30,7 @@ func main() {
 	// ETF Rsi
 	suggestions := make([]constant.Suggest, 0)
 	for name, code := range constant.EtfGroups {
-		time.Sleep(5 * time.Second)
+		time.Sleep(4 * time.Second)
 		etfRsiData := strategy.Rsi(code, 14)
 		if etfRsiData == nil {
 			continue

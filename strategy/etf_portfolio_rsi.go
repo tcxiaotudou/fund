@@ -30,7 +30,7 @@ func EtfPortfolioRsi() string {
 		for i := 0; i < len(prices); i++ {
 			dailyWeightedPrices[i] += prices[i] * float64(weight)
 		}
-		time.Sleep(5 * time.Second)
+		time.Sleep(4 * time.Second)
 	}
 	rsi := calculateRSI(dailyWeightedPrices, 14)
 	return fmt.Sprintf("%.2f", rsi[len(rsi)-1])
