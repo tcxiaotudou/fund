@@ -17,8 +17,8 @@ import (
 // https://data.howbuy.com/cgi/fund/v800z/zjzhchartdthc.json?zhid=67888190128&range=5N
 
 var existFund = map[string]string{
-	"161611": "融通内需驱动混合A",
-	"001564": "东方红京东大数据混合A",
+	"004814": "中欧红利优享混合A",
+	"008488": "华商恒益稳健混合",
 	"260112": "景顺长城能源基建混合A",
 	"006624": "中泰玉衡价值优选混合A",
 	"121010": "国投瑞银瑞源灵活配置混合A",
