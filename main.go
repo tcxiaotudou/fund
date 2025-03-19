@@ -119,7 +119,7 @@ func SendMail(funds []*constant.FundStrategy, rsiList []constant.Suggest, result
 	content += risContent
 
 	// 基金排行榜
-	fundContent := `<h4>场外基金推荐:</h4><br/>
+	fundContent := `<h4>场外基金推荐(top8):</h4><br/>
 		<table border="1" style="border-collapse: collapse;">
 		<tr>
 			<th>序号</th>

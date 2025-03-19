@@ -18,7 +18,7 @@ import (
 
 var existFund = map[string]string{
 	"004814": "中欧红利优享混合A",
-	"008488": "华商恒益稳健混合",
+	"161611": "融通内需驱动混合A",
 	"260112": "景顺长城能源基建混合A",
 	"006624": "中泰玉衡价值优选混合A",
 	"121010": "国投瑞银瑞源灵活配置混合A",
@@ -104,6 +104,7 @@ func FundStrategy() []*constant.FundStrategy {
 
 	list := make([]*constant.FundStrategy, 0)
 
+	size := 8
 	// 去重
 	for _, fund := range result {
 		_, ok := cache[fund.PersonName]
@@ -115,7 +116,9 @@ func FundStrategy() []*constant.FundStrategy {
 		if !ok {
 			fund.Name = "**" + fund.Name
 		}
-		list = append(list, fund)
+		if len(list) < size {
+			list = append(list, fund)
+		}
 	}
 
 	for existCode, existName := range existFund {
