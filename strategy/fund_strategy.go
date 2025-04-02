@@ -137,59 +137,6 @@ func FundStrategy() []*constant.FundStrategy {
 	return list
 }
 
-func setRate(strategy *constant.FundStrategy) *constant.FundStrategy {
-	log.Printf("获取雪球收益率开始: %s \n", strategy.Code)
-	url := "https://danjuanfunds.com/djapi/fund/" + strategy.Code
-
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		log.Println(err)
-		return strategy
-	}
-
-	req.Header.Set("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
-	req.Header.Set("Accept", "*/*")
-	req.Header.Set("Host", "danjuanfunds.com")
-	req.Header.Set("Connection", "keep-alive")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Println(err)
-		return strategy
-	}
-	defer resp.Body.Close()
-
-	responseBody, _ := ioutil.ReadAll(resp.Body)
-
-	response := string(responseBody)
-	log.Printf("获取雪球收益率结束: %s \n", response)
-	if err != nil || gjson.Get(response, "result_code").Int() != 0 {
-		log.Println(response)
-		return strategy
-	}
-
-	if gjson.Get(response, "data.declare_status").String() == "0" {
-		log.Println(response)
-		return nil
-	}
-
-	baseDataArr := gjson.Get(response, "data.fir_header_base_data").Array()
-
-	for _, baseData := range baseDataArr {
-		if baseData.Map()["data_name"].String() == "年化收益（近5年）" {
-			strategy.Year5Income = baseData.Map()["data_value_str"].String()
-			strategy.Year5IncomeNumber = baseData.Map()["data_value_number"].Num
-		}
-	}
-
-	if strategy.Year5IncomeNumber < 10 {
-		return nil
-	}
-
-	return strategy
-}
-
 func setFundRate(strategy *constant.FundStrategy) *constant.FundStrategy {
 	log.Printf("获取韭圈收益率开始: %s \n", strategy.Code)
 	url := "https://api.jiucaishuo.com/fundetail/details/fundinfo"
