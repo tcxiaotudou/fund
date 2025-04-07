@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"founds/constant"
 	"github.com/tidwall/gjson"
@@ -25,6 +26,11 @@ var existFund = map[string]string{
 	"004475": "华泰柏瑞富利混合A",
 	"090013": "大成竞争优势混合A",
 	"008271": "大成优势企业混合A",
+}
+
+var overseasFund = map[string]string{
+	"539001": "建信纳斯达克100指数(QDII)A人民币",
+	"050025": "博时标普500ETF联接A",
 }
 
 func FundStrategy() []*constant.FundStrategy {
@@ -217,4 +223,115 @@ func setFundRate(strategy *constant.FundStrategy) *constant.FundStrategy {
 	strategy.Year5Income = fmt.Sprintf("%.2f%%", year5IncomeNumber)
 
 	return strategy
+}
+
+type Response struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Data    struct {
+		CateList []interface{} `json:"cate_list"`
+		Category string        `json:"category"`
+		List     [][]struct {
+			Name  string `json:"name"`
+			Color string `json:"color,omitempty"`
+		} `json:"list"`
+		TwoCategory      []interface{} `json:"two_category"`
+		TwoCategoryIndex int           `json:"two_category_index"`
+	} `json:"data"`
+}
+
+func GetFundData(fundCode string) ([]float64, error) {
+	url := "https://apiv2.jiucaishuo.com/funddetail/changepercent/achieve"
+	method := "POST"
+
+	payload := map[string]interface{}{
+		"fund_code": fundCode,
+		"tags_id":   4,
+		"limit":     100,
+		"type":      "h5",
+		"version":   "2.5.6",
+	}
+
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		return nil, fmt.Errorf("error marshalling JSON: %v", err)
+	}
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, fmt.Errorf("error creating request: %v", err)
+	}
+
+	req.Header.Add("priority", "u=1, i")
+	req.Header.Add("content-type", "application/json")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "apiv2.jiucaishuo.com")
+	req.Header.Add("Connection", "keep-alive")
+
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("error making request: %v", err)
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading response body: %v", err)
+	}
+
+	var response Response
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshalling JSON: %v", err)
+	}
+
+	if len(response.Data.List) < 2 {
+		return nil, fmt.Errorf("the list does not contain enough elements")
+	}
+
+	var floatValues []float64
+	for _, item := range response.Data.List[1] {
+		value, err := strconv.ParseFloat(item.Name, 64)
+		if err == nil {
+			floatValues = append(floatValues, value)
+		}
+	}
+
+	// floatValues反转
+	for i, j := 0, len(floatValues)-1; i < j; i, j = i+1, j-1 {
+		floatValues[i], floatValues[j] = floatValues[j], floatValues[i]
+	}
+
+	return floatValues, nil
+}
+
+func FundPortfolioRsi() string {
+	// Initialize a slice to store the weighted prices for each day
+	var dailyWeightedPrices []float64
+
+	// Iterate over each ETF in the group
+	for code, _ := range existFund {
+		prices, _ := GetFundData(code)
+		if dailyWeightedPrices == nil {
+			dailyWeightedPrices = make([]float64, len(prices))
+		}
+		// Accumulate the weighted prices for each day
+		for i := 0; i < len(prices); i++ {
+			dailyWeightedPrices[i] += prices[i] * 6.25
+		}
+	}
+	// 海外
+	for code, _ := range overseasFund {
+		prices, _ := GetFundData(code)
+		if dailyWeightedPrices == nil {
+			dailyWeightedPrices = make([]float64, len(prices))
+		}
+		// Accumulate the weighted prices for each day
+		for i := 0; i < len(prices); i++ {
+			dailyWeightedPrices[i] += prices[i] * float64(25)
+		}
+	}
+	rsi := calculateRSI(dailyWeightedPrices, 14)
+	return fmt.Sprintf("%.2f", rsi[len(rsi)-1])
 }
