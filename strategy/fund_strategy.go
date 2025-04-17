@@ -303,6 +303,11 @@ func GetFundData(fundCode string) ([]float64, error) {
 		floatValues[i], floatValues[j] = floatValues[j], floatValues[i]
 	}
 
+	gsjz, err := FetchGSJZ(fundCode)
+	if err == nil {
+		floatValues = append(floatValues, gsjz)
+	}
+
 	return floatValues, nil
 }
 
@@ -334,4 +339,66 @@ func FundPortfolioRsi() string {
 	}
 	rsi := calculateRSI(dailyWeightedPrices, 14)
 	return fmt.Sprintf("%.2f", rsi[len(rsi)-1])
+}
+
+// FetchGSJZ retrieves the "gsjz" field from the API response as a float64.
+func FetchGSJZ(fundCode string) (float64, error) {
+	url := "https://api.jiucaishuo.com/fundetail/ttm/info"
+	method := "POST"
+
+	// Construct the request payload
+	payload := []byte(fmt.Sprintf(`{
+        "fund_code": "%s",
+        "type": "h5",
+        "version": "2.5.6"
+    }`, fundCode))
+
+	// Create the HTTP request
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(payload))
+	if err != nil {
+		return 0, fmt.Errorf("error creating request: %v", err)
+	}
+
+	// Set headers
+	req.Header.Add("priority", "u=1, i")
+	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("content-type", "application/json")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "api.jiucaishuo.com")
+	req.Header.Add("Connection", "keep-alive")
+
+	// Execute the HTTP request
+	res, err := client.Do(req)
+	if err != nil {
+		return 0, fmt.Errorf("error making request: %v", err)
+	}
+	defer res.Body.Close()
+
+	// Read the response body
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return 0, fmt.Errorf("error reading response body: %v", err)
+	}
+
+	// Parse JSON response
+	var response map[string]interface{}
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		return 0, fmt.Errorf("error unmarshalling JSON: %v", err)
+	}
+
+	// Extract data.gsjz and convert to float64
+	if data, ok := response["data"].(map[string]interface{}); ok {
+		if gsjz, ok := data["gsjz"].(string); ok {
+			value, err := strconv.ParseFloat(gsjz, 64)
+			if err != nil {
+				return 0, fmt.Errorf("error converting gsjz to float64: %v", err)
+			}
+			return value, nil
+		}
+		return 0, fmt.Errorf("gsjz field not found or not a string")
+	}
+
+	return 0, fmt.Errorf("data field not found or not an object")
 }
