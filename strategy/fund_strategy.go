@@ -18,11 +18,11 @@ import (
 // https://data.howbuy.com/cgi/fund/v800z/zjzhchartdthc.json?zhid=67888190128&range=5N
 
 var existFund = map[string]string{
-	"006624": "中泰玉衡价值优选混合A",
-	"090013": "大成竞争优势混合A",
-	"260112": "景顺长城能源基建混合A",
-	"008271": "大成优势企业混合A",
-	"004475": "华泰柏瑞富利混合A",
+	"006624": "中泰玉衡价值优选混合A-top5",
+	"090013": "大成竞争优势混合A-top5",
+	"260112": "景顺长城能源基建混合A-top5",
+	"008271": "大成优势企业混合A-top5",
+	"004475": "华泰柏瑞富利混合A-top5",
 	"121010": "国投瑞银瑞源灵活配置混合A",
 	"004814": "中欧红利优享混合A",
 	"160613": "鹏华盛世创新混合(LOF)A",
@@ -121,6 +121,8 @@ func FundStrategy() []*constant.FundStrategy {
 		_, ok = existFund[fund.Code]
 		if !ok {
 			fund.Name = "**" + fund.Name
+		} else {
+			fund.Name = existFund[fund.Code]
 		}
 		if len(list) < size {
 			list = append(list, fund)
