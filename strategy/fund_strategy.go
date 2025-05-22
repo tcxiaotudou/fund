@@ -18,14 +18,14 @@ import (
 // https://data.howbuy.com/cgi/fund/v800z/zjzhchartdthc.json?zhid=67888190128&range=5N
 
 var existFund = map[string]string{
-	"006624": "中泰玉衡价值优选混合A-top5",
 	"090013": "大成竞争优势混合A-top5",
+	"006624": "中泰玉衡价值优选混合A-top5",
 	"008271": "大成优势企业混合A-top5",
 	"004475": "华泰柏瑞富利混合A-top5",
+	"001564": "东方红京东大数据混合A",
 	"121010": "国投瑞银瑞源灵活配置混合A-top5",
 	"004814": "中欧红利优享混合A",
-	"005576": "华泰柏瑞新金融地产混合A",
-	"160613": "鹏华盛世创新混合(LOF)A",
+	"000574": "宝盈新价值混合A",
 }
 
 var overseasFund = map[string]string{
@@ -39,7 +39,7 @@ func FundStrategy() []*constant.FundStrategy {
 	method := "POST"
 
 	payload := []byte(`{
-        "condition_id": "2199957"
+        "condition_id": "2344760"
     }`)
 
 	client := &http.Client{}
@@ -71,7 +71,7 @@ func FundStrategy() []*constant.FundStrategy {
 
 	log.Printf("获取精选策略结束: %s \n", response)
 
-	if err != nil || gjson.Get(response, "code").Int() != 0 {
+	if gjson.Get(response, "code").Int() != 0 {
 		log.Println(response)
 		return nil
 	}
