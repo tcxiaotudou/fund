@@ -18,19 +18,24 @@ import (
 // https://data.howbuy.com/cgi/fund/v800z/zjzhchartdthc.json?zhid=67888190128&range=5N
 
 var existFund = map[string]string{
-	"090013": "大成竞争优势混合A-top5",
-	"006624": "中泰玉衡价值优选混合A-top5",
-	"008271": "大成优势企业混合A-top5",
-	"004475": "华泰柏瑞富利混合A-top5",
-	"001564": "东方红京东大数据混合A-top5",
-	"121010": "国投瑞银瑞源灵活配置混合A",
+	"006624": "中泰玉衡价值优选混合A-top3",
+	"004475": "华泰柏瑞富利混合A-top3",
+	"090013": "大成竞争优势混合A-top3",
+	"005576": "华泰柏瑞新金融地产混合A",
 	"004814": "中欧红利优享混合A",
-	"000574": "宝盈新价值混合A",
+	"008271": "大成优势企业混合A",
+	"001564": "东方红京东大数据混合A",
+	"210002": "金鹰红利价值混合A",
 }
 
 var overseasFund = map[string]string{
 	"539001": "建信纳斯达克100指数(QDII)A人民币",
 	"050025": "博时标普500ETF联接A",
+}
+
+var exclude = map[string]string{
+	"001247": "华泰柏瑞新利混合A",
+	"004685": "金元顺安元启混合",
 }
 
 func FundStrategy() []*constant.FundStrategy {
@@ -93,7 +98,9 @@ func FundStrategy() []*constant.FundStrategy {
 		item.PersonName = fundInfo[10].Map()["val"].String()
 		item.PersonYear = fundInfo[3].Map()["val"].String()
 		year5Sharpe, _ := strconv.Atoi(strings.Split(fundInfo[5].Map()["val"].String(), "/")[0])
+		year5Calmar, _ := strconv.Atoi(strings.Split(fundInfo[6].Map()["val"].String(), "/")[0])
 		item.Year5Sharpe = year5Sharpe
+		item.Year5Calmar = year5Calmar
 		item.Gm = fundInfo[1].Map()["val"].String()
 		item.YearTodayIncome = fundInfo[9].Map()["val"].String()
 		item = setFundRate(item)
@@ -103,9 +110,9 @@ func FundStrategy() []*constant.FundStrategy {
 		result = append(result, item)
 	}
 
-	// 按近 5 年夏普排名
+	// 按近 5 年卡码比率排名
 	sort.Slice(result, func(i, j int) bool {
-		return result[i].Year5Sharpe < result[j].Year5Sharpe
+		return result[i].Year5Calmar < result[j].Year5Calmar
 	})
 
 	list := make([]*constant.FundStrategy, 0)
@@ -113,6 +120,12 @@ func FundStrategy() []*constant.FundStrategy {
 	size := 10
 	// 去重
 	for _, fund := range result {
+
+		// 排除
+		if exclude[fund.Code] != "" {
+			continue
+		}
+
 		_, ok := cache[fund.PersonName]
 		if ok {
 			continue

@@ -13,6 +13,8 @@ type FundStrategy struct {
 
 	Year5Sharpe int `json:"year5Sharpe"` // 近 5 年夏普排名
 
+	Year5Calmar int `json:"year5Calmar"` // 近 5 年卡码比率排名
+
 	HcMaxYear5 string `json:"hcMax"` // 近 5 年最大回撤
 	HcCurYear5 string `json:"hcCur"` // 近 5 年当前回撤
 
