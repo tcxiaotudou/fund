@@ -18,24 +18,24 @@ import (
 // https://data.howbuy.com/cgi/fund/v800z/zjzhchartdthc.json?zhid=67888190128&range=5N
 
 var existFund = map[string]string{
-	"006624": "中泰玉衡价值优选混合A-top3",
-	"004475": "华泰柏瑞富利混合A-top3",
-	"090013": "大成竞争优势混合A-top3",
-	"005576": "华泰柏瑞新金融地产混合A",
-	"004814": "中欧红利优享混合A",
-	"008271": "大成优势企业混合A",
-	"001564": "东方红京东大数据混合A",
+	"004475": "华泰柏瑞富利混合A",
+	"006624": "中泰玉衡价值优选混合A",
 	"210002": "金鹰红利价值混合A",
-}
-
-var overseasFund = map[string]string{
-	"539001": "建信纳斯达克100指数(QDII)A人民币",
-	"050025": "博时标普500ETF联接A",
+	"008271": "大成优势企业混合A",
+	"004814": "中欧红利优享混合A",
+	"090013": "大成竞争优势混合A",
+	"001564": "东方红京东大数据混合A",
+	"005576": "华泰柏瑞新金融地产混合A",
 }
 
 var exclude = map[string]string{
 	"001247": "华泰柏瑞新利混合A",
-	"004685": "金元顺安元启混合",
+	"004685": "金元顺安元启灵活配置混合",
+}
+
+var overseasFund = map[string]string{
+	"539001": "建信纳斯达克100指数(QDII)A人民币",
+	// "050025": "博时标普500ETF联接A",
 }
 
 func FundStrategy() []*constant.FundStrategy {
@@ -110,9 +110,9 @@ func FundStrategy() []*constant.FundStrategy {
 		result = append(result, item)
 	}
 
-	// 按近 5 年卡码比率排名
+	// 按近 5 年收益率排名
 	sort.Slice(result, func(i, j int) bool {
-		return result[i].Year5Calmar < result[j].Year5Calmar
+		return result[i].Year5IncomeNumber > result[j].Year5IncomeNumber
 	})
 
 	list := make([]*constant.FundStrategy, 0)
@@ -229,10 +229,10 @@ func setFundRate(strategy *constant.FundStrategy) *constant.FundStrategy {
 	responseBody, _ = ioutil.ReadAll(res.Body)
 	response = string(responseBody)
 	year5IncomeNumber := gjson.Get(response, "data.year_income").Float()
-
-	if year5IncomeNumber < 10 {
-		return nil
-	}
+	//
+	//if year5IncomeNumber < 10 {
+	//	return nil
+	//}
 
 	strategy.Year5IncomeNumber = year5IncomeNumber
 	strategy.Year5Income = fmt.Sprintf("%.2f%%", year5IncomeNumber)
@@ -349,7 +349,7 @@ func FundPortfolioRsi() string {
 		}
 		// Accumulate the weighted prices for each day
 		for i := 0; i < len(prices); i++ {
-			dailyWeightedPrices[i] += prices[i] * float64(25)
+			dailyWeightedPrices[i] += prices[i] * float64(50)
 		}
 	}
 	rsi := calculateRSI(dailyWeightedPrices, 14)
