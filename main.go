@@ -89,6 +89,7 @@ func SendMail(funds []*constant.FundStrategy, rsiList []constant.Suggest, result
 	m := gomail.NewMessage()
 	m.SetHeader("From", "2290262044@qq.com")
 	m.SetHeader("To", "2290262044@qq.com")
+	m.SetHeader("Cc", "1374716233@qq.com")
 	m.SetHeader("Subject", fmt.Sprintf("每日行情（%s）", strategy.Date))
 	content := "<h4>行情数据：</h4><ul>"
 	for _, value := range result {
