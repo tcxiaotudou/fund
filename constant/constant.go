@@ -2,6 +2,8 @@ package constant
 
 const GUO_ZHENG = "sz399317"
 
+const GUO_ZHAI = "sh511090"
+
 // Index 定义一个结构体，用来存储指数的收盘价和日期
 type Index struct {
 	Close string `json:"close"` // 收盘价
