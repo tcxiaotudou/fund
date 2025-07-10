@@ -417,3 +417,134 @@ func FetchGSJZ(fundCode string) (float64, error) {
 
 	return 0, fmt.Errorf("data field not found or not an object")
 }
+
+// 量化基金策略
+
+var existQuantifyFund = map[string]string{
+	"015880": "中欧小盘成长混合A",
+	"005437": "易方达易百智能量化策略A",
+	"005616": "东方量化成长灵活配置混合A",
+	"006267": "诺德量化核心A",
+	"001990": "中欧数据挖掘多因子混合A",
+	"011868": "中信建投远见回报混合A",
+	"000006": "西部利得量化成长混合A",
+	"014201": "天弘中证1000指数增强A",
+	"005457": "景顺长城量化小盘股票A",
+	"015453": "中欧中证500指数增强A",
+}
+
+func QuantifyFundStrategy() []*constant.FundStrategy {
+	log.Println("获取量化策略开始...")
+	url := "https://api.jiucaishuo.com/v2/fundchoose/result2"
+	method := "POST"
+
+	payload := []byte(`{
+        "condition_id": "2368605"
+    }`)
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(payload))
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	req.Header.Add("priority", "u=1, i")
+	req.Header.Add("content-type", "application/json")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "api.jiucaishuo.com")
+	req.Header.Add("Connection", "keep-alive")
+
+	res, err := client.Do(req)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	defer res.Body.Close()
+
+	responseBody, err := io.ReadAll(res.Body)
+	if err != nil {
+		log.Printf("获取量化策略失败: %s\n", responseBody)
+		log.Println(err)
+		return nil
+	}
+	response := string(responseBody)
+
+	log.Printf("获取量化策略结束: %s \n", response)
+
+	if gjson.Get(response, "code").Int() != 0 {
+		log.Println(response)
+		return nil
+	}
+
+	fundList := gjson.Get(response, "data.position_table_data").Array()
+
+	result := make([]*constant.FundStrategy, 0)
+
+	cache := make(map[string]string)
+
+	for _, data := range fundList {
+		fundData := data.Map()
+		item := &constant.FundStrategy{}
+		fundName := fundData["name"].String()
+		fundCode := fundData["code"].String()
+		item.Name = fundName
+		item.Code = fundCode
+		fundInfo := fundData["list"].Array()
+		item.PersonName = fundInfo[8].Map()["val"].String()
+		item.PersonYear = fundInfo[4].Map()["val"].String()
+		item.Gm = fundInfo[2].Map()["val"].String()
+		item.YearTodayIncome = strings.Split(fundInfo[7].Map()["val"].String(), "%")[0]
+
+		yearTodayIncomeNumber, _ := strconv.ParseFloat(item.YearTodayIncome, 64)
+		item.YearTodayIncomeNumber = yearTodayIncomeNumber
+
+		result = append(result, item)
+	}
+
+	// 按今年收益率排名
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].YearTodayIncomeNumber > result[j].YearTodayIncomeNumber
+	})
+
+	list := make([]*constant.FundStrategy, 0)
+
+	size := 12
+	// 去重
+	for _, fund := range result {
+
+		// 排除
+		if exclude[fund.Code] != "" {
+			continue
+		}
+
+		_, ok := cache[fund.PersonName]
+		if ok {
+			continue
+		}
+		cache[fund.PersonName] = "1"
+		_, ok = existQuantifyFund[fund.Code]
+		if !ok {
+			fund.Name = "**" + fund.Name
+		} else {
+			fund.Name = existQuantifyFund[fund.Code]
+		}
+		if len(list) < size {
+			list = append(list, fund)
+		}
+	}
+
+	for existCode, existName := range existQuantifyFund {
+		isDelete := true
+		for _, strategy := range list {
+			if existCode == strategy.Code {
+				isDelete = false
+			}
+		}
+		if isDelete {
+			deleteFund := &constant.FundStrategy{Code: existCode, Name: "xx" + existName}
+			list = append(list, deleteFund)
+		}
+	}
+
+	return list
+}

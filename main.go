@@ -70,7 +70,10 @@ func main() {
 	// 推荐基金
 	funds := strategy.FundStrategy()
 
-	SendMail(funds, suggestions, suggestionList)
+	// 量化
+	quantifyFunds := strategy.QuantifyFundStrategy()
+
+	SendMail(funds, quantifyFunds, suggestions, suggestionList)
 }
 
 /**
@@ -86,7 +89,7 @@ func main() {
 */
 
 // SendMail 邮件
-func SendMail(funds []*constant.FundStrategy, rsiList []constant.Suggest, result []string) {
+func SendMail(funds []*constant.FundStrategy, quantifyFunds []*constant.FundStrategy, rsiList []constant.Suggest, result []string) {
 	// 创建一个新的邮件消息
 	m := gomail.NewMessage()
 	m.SetHeader("From", "2290262044@qq.com")
@@ -115,7 +118,7 @@ func SendMail(funds []*constant.FundStrategy, rsiList []constant.Suggest, result
 			<td>%s</td>
 			<td>%s</td>
 			<td>%s</td>
-			<td>%s</td>
+			<td>%s</td> 
 		  </tr>`, rsiData.CodeName, fmt.Sprintf("%.2f", rsiData.Now), rsiData.Interval, rsiData.Remark, rsiData.Time)
 		risContent += content
 	}
@@ -123,7 +126,7 @@ func SendMail(funds []*constant.FundStrategy, rsiList []constant.Suggest, result
 	content += risContent
 
 	// 基金排行榜
-	fundContent := `<h4>场外基金推荐:</h4><br/>
+	fundContent := `<h4>价值基金推荐:</h4><br/>
 		<table border="1" style="border-collapse: collapse;">
 		<tr>
 			<th>序号</th>
@@ -158,6 +161,40 @@ func SendMail(funds []*constant.FundStrategy, rsiList []constant.Suggest, result
 	}
 	fundContent += `</table><br/>`
 	content += fundContent
+
+	// 量化基金
+	quantifyFundContent := `<h4>量化基金推荐:</h4><br/>
+		<table border="1" style="border-collapse: collapse;">
+		<tr>
+			<th>序号</th>
+			<th>名称</th>
+			<th>基金经理</th>
+			<th>管理时长</th>
+			<th>规模</th>
+			<th>今年以来收益率</th>
+        </tr>
+	`
+	for idx, fund := range quantifyFunds {
+		content := fmt.Sprintf(`
+		  <tr>
+			<td>%d</td>
+			<td>%s</td>
+			<td>%s</td>
+			<td>%s</td>
+			<td>%s</td>
+			<td>%s</td>
+		  </tr>`,
+			idx+1,
+			fmt.Sprintf("%s(%s)", fund.Name, fund.Code),
+			fmt.Sprintf("%s", fund.PersonName),
+			fmt.Sprintf("%s", fund.PersonYear),
+			fmt.Sprintf("%s", fund.Gm),
+			fmt.Sprintf("%s", fund.YearTodayIncome),
+		)
+		quantifyFundContent += content
+	}
+	quantifyFundContent += `</table><br/>`
+	content += quantifyFundContent
 
 	// 相关链接
 	content += "<h4>相关链接:</h4><ul>"

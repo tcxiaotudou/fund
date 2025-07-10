@@ -69,6 +69,14 @@ func TestFundStrategy(t *testing.T) {
 
 }
 
+func TestQuantifyFundStrategy(t *testing.T) {
+	fundStrategy := strategy.QuantifyFundStrategy()
+	for _, c := range fundStrategy {
+		fmt.Println(c.Name)
+	}
+
+}
+
 func TestEtfPortfolioRsi(t *testing.T) {
 	fmt.Println(strategy.EtfPortfolioRsi())
 }
