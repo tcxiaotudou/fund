@@ -262,7 +262,7 @@ func GetFundData(fundCode string) ([]float64, error) {
 	payload := map[string]interface{}{
 		"fund_code": fundCode,
 		"tags_id":   4,
-		"limit":     100,
+		"limit":     200,
 		"type":      "h5",
 		"version":   "2.5.6",
 	}
@@ -354,6 +354,15 @@ func FundPortfolioRsi() string {
 	}
 	rsi := calculateRSI(dailyWeightedPrices, 14)
 	return fmt.Sprintf("%.2f", rsi[len(rsi)-1])
+}
+
+func FundRsi(code string, period int) float64 {
+	prices, _ := GetFundData(code)
+	for i := 0; i < len(prices); i++ {
+		prices[i] = prices[i] * 100
+	}
+	rsi := calculateRSI(prices, period)
+	return rsi[len(rsi)-1]
 }
 
 // FetchGSJZ retrieves the "gsjz" field from the API response as a float64.
@@ -547,4 +556,23 @@ func QuantifyFundStrategy() []*constant.FundStrategy {
 	}
 
 	return list
+}
+
+func QuantifyFundPortfolioRsi() string {
+	// Initialize a slice to store the weighted prices for each day
+	var dailyWeightedPrices []float64
+
+	// Iterate over each ETF in the group
+	for code, _ := range existQuantifyFund {
+		prices, _ := GetFundData(code)
+		if dailyWeightedPrices == nil {
+			dailyWeightedPrices = make([]float64, len(prices))
+		}
+		// Accumulate the weighted prices for each day
+		for i := 0; i < len(prices); i++ {
+			dailyWeightedPrices[i] += prices[i] * 100
+		}
+	}
+	rsi := calculateRSI(dailyWeightedPrices, 14)
+	return fmt.Sprintf("%.2f", rsi[len(rsi)-1])
 }

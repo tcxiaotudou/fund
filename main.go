@@ -30,6 +30,7 @@ func main() {
 	suggestionList = append(suggestionList, "5年均线"+":"+strategy.Ma5y())
 	suggestionList = append(suggestionList, "场内ETF组合"+":"+strategy.EtfPortfolioRsi())
 	suggestionList = append(suggestionList, "场外基金组合"+":"+strategy.FundPortfolioRsi())
+	suggestionList = append(suggestionList, "量化基金组合"+":"+strategy.QuantifyFundPortfolioRsi())
 	// ETF Rsi
 	suggestions := make([]constant.Suggest, 0)
 	for name, code := range constant.EtfGroups {

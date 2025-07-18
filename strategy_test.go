@@ -84,3 +84,7 @@ func TestEtfPortfolioRsi(t *testing.T) {
 func TestFundPortfolioRsi(t *testing.T) {
 	fmt.Println(strategy.FundPortfolioRsi())
 }
+
+func TestFundRsi(t *testing.T) {
+	fmt.Println(strategy.FundRsi("378006", 14))
+}
