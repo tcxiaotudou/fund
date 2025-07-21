@@ -8,7 +8,6 @@ import (
 	"log"
 	"math"
 	"net/http"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -124,7 +123,7 @@ func getPrices(code string, dayScale int) []float64 {
 	if dayScale > defaultDay/3 {
 		defaultDay = dayScale * 11
 	}
-	url := fmt.Sprintf("https://quotes.sina.cn/cn/api/jsonp_v2.php/=/CN_MarketDataService.getKLineData?symbol=%s&scale=120&ma=no&datalen=%d", code, defaultDay)
+	url := fmt.Sprintf("https://quotes.sina.cn/cn/api/json_v2.php/CN_MarketDataService.getKLineData?symbol=%s&scale=120&ma=no&datalen=%d", code, defaultDay)
 	response, err := http.Get(url)
 	if err != nil {
 		log.Println("http get error:", err)
@@ -136,15 +135,8 @@ func getPrices(code string, dayScale int) []float64 {
 		log.Println("io read error:", err)
 		return nil
 	}
-	rex := regexp.MustCompile(`\[([\s\S]*?)]`)
-	titleMatches := rex.FindAllSubmatch(data, -1)
-	if titleMatches == nil {
-		log.Println("regexp error:", err)
-		return nil
-	}
-	jsonStr := fmt.Sprintf("[%s]", string(titleMatches[0][1]))
 	var index []constant.Index
-	err = json.Unmarshal([]byte(jsonStr), &index)
+	err = json.Unmarshal([]byte(data), &index)
 	if err != nil {
 		log.Println("json unmarshal error:", err)
 		return nil

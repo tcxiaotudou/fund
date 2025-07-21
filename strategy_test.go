@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"founds/strategy"
+	"log"
 	"net/http"
 	"net/url"
 	"testing"
@@ -87,4 +88,30 @@ func TestFundPortfolioRsi(t *testing.T) {
 
 func TestFundRsi(t *testing.T) {
 	fmt.Println(strategy.FundRsi("378006", 14))
+}
+
+func TestMa60Strategy(t *testing.T) {
+	log.Println("开始测试移动平均线策略...")
+
+	// 测试移动平均线策略
+	results := strategy.MaStrategy()
+
+	fmt.Printf("移动平均线策略结果（共%d个ETF）:\n", len(results))
+	fmt.Println("================================================")
+	fmt.Printf("%-20s %-10s %-10s %-10s\n", "ETF名称", "60周均线", "当前日线", "买入信号")
+	fmt.Println("------------------------------------------------")
+
+	buyCount := 0
+	for _, result := range results {
+		buySignal := "否"
+		if result.IsBuySignal {
+			buySignal = "是"
+			buyCount++
+		}
+		fmt.Printf("%-20s %-10.2f %-10.2f %-10s\n",
+			result.ETFName, result.WeeklyMA60, result.CurrentDaily, buySignal)
+	}
+
+	fmt.Println("================================================")
+	fmt.Printf("总计: %d个ETF，其中%d个有买入信号\n", len(results), buyCount)
 }

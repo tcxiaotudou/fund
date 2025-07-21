@@ -34,7 +34,7 @@ func main() {
 	// ETF Rsi
 	suggestions := make([]constant.Suggest, 0)
 	for name, code := range constant.EtfGroups {
-		time.Sleep(4 * time.Second)
+		time.Sleep(3 * time.Second)
 		etfRsiData := strategy.Rsi(code, 14)
 		if etfRsiData == nil {
 			continue
@@ -74,7 +74,10 @@ func main() {
 	// 量化
 	quantifyFunds := strategy.QuantifyFundStrategy()
 
-	SendMail(funds, quantifyFunds, suggestions, suggestionList)
+	// 移动平均线策略
+	maStrategyResults := strategy.MaStrategy()
+
+	SendMail(funds, quantifyFunds, suggestions, suggestionList, maStrategyResults)
 }
 
 /**
@@ -90,7 +93,7 @@ func main() {
 */
 
 // SendMail 邮件
-func SendMail(funds []*constant.FundStrategy, quantifyFunds []*constant.FundStrategy, rsiList []constant.Suggest, result []string) {
+func SendMail(funds []*constant.FundStrategy, quantifyFunds []*constant.FundStrategy, rsiList []constant.Suggest, result []string, maStrategyResults []*strategy.MaStrategyData) {
 	// 创建一个新的邮件消息
 	m := gomail.NewMessage()
 	m.SetHeader("From", "2290262044@qq.com")
@@ -125,6 +128,38 @@ func SendMail(funds []*constant.FundStrategy, quantifyFunds []*constant.FundStra
 	}
 	risContent += `</table><br/>`
 	content += risContent
+
+	// 移动平均线策略
+	maStrategyContent := `<h4>移动平均线策略:</h4><br/>
+		<table border="1" style="border-collapse: collapse;">
+		<tr>
+			<th>名称</th>
+			<th>60周均线</th>
+			<th>当前日K线</th>
+			<th>数据时间</th>
+        </tr>
+	`
+	// 只显示有买入信号的ETF
+	buySignalCount := 0
+	for _, data := range maStrategyResults {
+		if data.IsBuySignal {
+			buySignalCount++
+			rowContent := fmt.Sprintf(`
+			  <tr>
+				<td>%s</td>
+				<td>%.2f</td>
+				<td>%.2f</td>
+				<td>%s</td> 
+			  </tr>`, data.ETFName, data.WeeklyMA60, data.CurrentDaily, data.DataTime.Format("2006-01-02 15:04:05"))
+			maStrategyContent += rowContent
+		}
+	}
+	maStrategyContent += `</table><br/>`
+	if buySignalCount > 0 {
+		content += maStrategyContent
+	} else {
+		content += `<h4>移动平均线策略（周线强势+日线回调）:</h4><p>暂无符合条件的ETF</p><br/>`
+	}
 
 	// 基金排行榜
 	fundContent := `<h4>价值基金推荐:</h4><br/>

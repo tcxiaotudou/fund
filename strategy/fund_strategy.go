@@ -44,7 +44,7 @@ func FundStrategy() []*constant.FundStrategy {
 	method := "POST"
 
 	payload := []byte(`{
-        "condition_id": "2344760"
+        "condition_id": "2374632"
     }`)
 
 	client := &http.Client{}
@@ -428,18 +428,14 @@ func FetchGSJZ(fundCode string) (float64, error) {
 }
 
 // 量化基金策略
-
 var existQuantifyFund = map[string]string{
+	"320016": "诺安多策略混合A",
 	"015880": "中欧小盘成长混合A",
-	"005437": "易方达易百智能量化策略A",
-	"005616": "东方量化成长灵活配置混合A",
-	"006267": "诺德量化核心A",
+	"005225": "广发量化多因子混合",
 	"001990": "中欧数据挖掘多因子混合A",
 	"011868": "中信建投远见回报混合A",
-	"000006": "西部利得量化成长混合A",
-	"014201": "天弘中证1000指数增强A",
-	"005457": "景顺长城量化小盘股票A",
-	"015453": "中欧中证500指数增强A",
+	"005741": "南方君信混合A",
+	"001244": "华泰柏瑞量化智慧混合A",
 }
 
 func QuantifyFundStrategy() []*constant.FundStrategy {
@@ -448,7 +444,7 @@ func QuantifyFundStrategy() []*constant.FundStrategy {
 	method := "POST"
 
 	payload := []byte(`{
-        "condition_id": "2368605"
+        "condition_id": "2374415"
     }`)
 
 	client := &http.Client{}
@@ -499,10 +495,10 @@ func QuantifyFundStrategy() []*constant.FundStrategy {
 		item.Name = fundName
 		item.Code = fundCode
 		fundInfo := fundData["list"].Array()
-		item.PersonName = fundInfo[8].Map()["val"].String()
-		item.PersonYear = fundInfo[4].Map()["val"].String()
-		item.Gm = fundInfo[2].Map()["val"].String()
-		item.YearTodayIncome = strings.Split(fundInfo[7].Map()["val"].String(), "%")[0]
+		item.PersonName = fundInfo[7].Map()["val"].String()
+		item.PersonYear = fundInfo[5].Map()["val"].String()
+		item.Gm = fundInfo[1].Map()["val"].String()
+		item.YearTodayIncome = strings.Split(fundInfo[6].Map()["val"].String(), "%")[0]
 
 		yearTodayIncomeNumber, _ := strconv.ParseFloat(item.YearTodayIncome, 64)
 		item.YearTodayIncomeNumber = yearTodayIncomeNumber
@@ -517,7 +513,7 @@ func QuantifyFundStrategy() []*constant.FundStrategy {
 
 	list := make([]*constant.FundStrategy, 0)
 
-	size := 12
+	size := 8
 	// 去重
 	for _, fund := range result {
 
