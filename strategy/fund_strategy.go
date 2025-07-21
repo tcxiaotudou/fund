@@ -96,12 +96,12 @@ func FundStrategy() []*constant.FundStrategy {
 		item.Code = fundCode
 		fundInfo := fundData["list"].Array()
 		item.PersonName = fundInfo[10].Map()["val"].String()
-		item.PersonYear = fundInfo[3].Map()["val"].String()
+		item.PersonYear = fundInfo[2].Map()["val"].String()
 		year5Sharpe, _ := strconv.Atoi(strings.Split(fundInfo[5].Map()["val"].String(), "/")[0])
 		year5Calmar, _ := strconv.Atoi(strings.Split(fundInfo[6].Map()["val"].String(), "/")[0])
 		item.Year5Sharpe = year5Sharpe
 		item.Year5Calmar = year5Calmar
-		item.Gm = fundInfo[1].Map()["val"].String()
+		item.Gm = fundInfo[3].Map()["val"].String()
 		item.YearTodayIncome = fundInfo[9].Map()["val"].String()
 		item = setFundRate(item)
 		if item == nil {
