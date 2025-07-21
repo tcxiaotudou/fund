@@ -29,12 +29,11 @@ func main() {
 	suggestionList = append(suggestionList, "当前股债再平衡建议"+":"+strategy.RsiStockBalance(guoZheng90RsiData.Now))
 	suggestionList = append(suggestionList, "5年均线"+":"+strategy.Ma5y())
 	suggestionList = append(suggestionList, "场内ETF组合"+":"+strategy.EtfPortfolioRsi())
-	suggestionList = append(suggestionList, "场外基金组合"+":"+strategy.FundPortfolioRsi())
-	suggestionList = append(suggestionList, "量化基金组合"+":"+strategy.QuantifyFundPortfolioRsi())
+	suggestionList = append(suggestionList, "场外基金组合"+":"+strategy.FundPortfolioRsi(14))
+	suggestionList = append(suggestionList, "量化基金组合"+":"+strategy.QuantifyFundPortfolioRsi(14))
 	// ETF Rsi
 	suggestions := make([]constant.Suggest, 0)
 	for name, code := range constant.EtfGroups {
-		time.Sleep(3 * time.Second)
 		etfRsiData := strategy.Rsi(code, 14)
 		if etfRsiData == nil {
 			continue

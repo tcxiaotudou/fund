@@ -326,7 +326,7 @@ func GetFundData(fundCode string) ([]float64, error) {
 	return floatValues, nil
 }
 
-func FundPortfolioRsi() string {
+func FundPortfolioRsi(period int) string {
 	// Initialize a slice to store the weighted prices for each day
 	var dailyWeightedPrices []float64
 
@@ -352,7 +352,7 @@ func FundPortfolioRsi() string {
 			dailyWeightedPrices[i] += prices[i] * float64(50)
 		}
 	}
-	rsi := calculateRSI(dailyWeightedPrices, 14)
+	rsi := calculateRSI(dailyWeightedPrices, period)
 	return fmt.Sprintf("%.2f", rsi[len(rsi)-1])
 }
 
@@ -554,7 +554,7 @@ func QuantifyFundStrategy() []*constant.FundStrategy {
 	return list
 }
 
-func QuantifyFundPortfolioRsi() string {
+func QuantifyFundPortfolioRsi(period int) string {
 	// Initialize a slice to store the weighted prices for each day
 	var dailyWeightedPrices []float64
 
@@ -569,6 +569,6 @@ func QuantifyFundPortfolioRsi() string {
 			dailyWeightedPrices[i] += prices[i] * 100
 		}
 	}
-	rsi := calculateRSI(dailyWeightedPrices, 14)
+	rsi := calculateRSI(dailyWeightedPrices, period)
 	return fmt.Sprintf("%.2f", rsi[len(rsi)-1])
 }

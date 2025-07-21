@@ -119,6 +119,7 @@ func rsiArray(code string, dayScale int) []float64 {
 }
 
 func getPrices(code string, dayScale int) []float64 {
+	time.Sleep(2 * time.Second)
 	defaultDay := 201
 	if dayScale > defaultDay/3 {
 		defaultDay = dayScale * 11

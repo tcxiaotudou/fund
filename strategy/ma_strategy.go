@@ -26,7 +26,6 @@ func MaStrategy() []*MaStrategyData {
 	var results []*MaStrategyData
 
 	for name, code := range constant.EtfGroups {
-		time.Sleep(3 * time.Second) // 避免请求过于频繁
 
 		// 获取60周均线
 		weeklyMA60 := calculateMA(code, 1200, 60) // 1200为周K线
@@ -34,15 +33,12 @@ func MaStrategy() []*MaStrategyData {
 			continue
 		}
 
-		time.Sleep(3 * time.Second)
-
 		// 获取60日均线
 		dailyMA60 := calculateMA(code, 240, 60) // 240为日K线
 		if dailyMA60 == 0 {
 			continue
 		}
 
-		time.Sleep(3 * time.Second)
 		// 获取当前日K线收盘价
 		currentDaily := getCurrentPrice(code, 240)
 		if currentDaily == 0 {
