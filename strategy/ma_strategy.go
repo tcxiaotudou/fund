@@ -17,6 +17,7 @@ type MaStrategyData struct {
 	ETFCode      string    // ETF代码
 	WeeklyMA60   float64   // 60周均线
 	CurrentDaily float64   // 当前日K线收盘价
+	DailyMA60    float64   // 60日均线
 	DataTime     time.Time // 数据时间
 	IsBuySignal  bool      // 是否为买入信号
 }
@@ -53,6 +54,7 @@ func MaStrategy() []*MaStrategyData {
 			ETFCode:      code,
 			WeeklyMA60:   weeklyMA60,
 			CurrentDaily: currentDaily,
+			DailyMA60:    dailyMA60,
 			DataTime:     time.Now(),
 			IsBuySignal:  isBuySignal,
 		}

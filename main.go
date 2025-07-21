@@ -29,8 +29,8 @@ func main() {
 	suggestionList = append(suggestionList, "当前股债再平衡建议"+":"+strategy.RsiStockBalance(guoZheng90RsiData.Now))
 	suggestionList = append(suggestionList, "5年均线"+":"+strategy.Ma5y())
 	suggestionList = append(suggestionList, "场内ETF组合"+":"+strategy.EtfPortfolioRsi())
-	suggestionList = append(suggestionList, "场外基金组合"+":"+strategy.FundPortfolioRsi(14))
-	suggestionList = append(suggestionList, "量化基金组合"+":"+strategy.QuantifyFundPortfolioRsi(14))
+	suggestionList = append(suggestionList, "场外基金组合"+":"+fmt.Sprintf("%s, %s", strategy.FundPortfolioRsi(14), strategy.FundPortfolioRsi(90)))
+	suggestionList = append(suggestionList, "量化基金组合"+":"+fmt.Sprintf("%s, %s", strategy.QuantifyFundPortfolioRsi(14), strategy.QuantifyFundPortfolioRsi(90)))
 	// ETF Rsi
 	suggestions := make([]constant.Suggest, 0)
 	for name, code := range constant.EtfGroups {
@@ -135,6 +135,7 @@ func SendMail(funds []*constant.FundStrategy, quantifyFunds []*constant.FundStra
 			<th>名称</th>
 			<th>60周均线</th>
 			<th>当前日K线</th>
+			<th>60日均线</th>
 			<th>数据时间</th>
         </tr>
 	`
@@ -148,8 +149,9 @@ func SendMail(funds []*constant.FundStrategy, quantifyFunds []*constant.FundStra
 				<td>%s</td>
 				<td>%.2f</td>
 				<td>%.2f</td>
+				<td>%.2f</td>
 				<td>%s</td> 
-			  </tr>`, data.ETFName, data.WeeklyMA60, data.CurrentDaily, data.DataTime.Format("2006-01-02 15:04:05"))
+			  </tr>`, data.ETFName, data.WeeklyMA60, data.CurrentDaily, data.DailyMA60, data.DataTime.Format("2006-01-02 15:04:05"))
 			maStrategyContent += rowContent
 		}
 	}
