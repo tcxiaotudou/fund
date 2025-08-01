@@ -6,11 +6,8 @@ import (
 
 var (
 	EtfGroups = map[string]int64{
-		"sz161119": 15, // 中债ETF
-		"sz159696": 35, // 纳斯达克ETF
-		"sh563020": 30, // 红利低波ETF
-		"sh513260": 10, // 恒生科技ETF
-		"sz159985": 10, // 豆柏ETF
+		"sz159696": 50, // 纳斯达克ETF
+		"sz159307": 50, // 红利低波100ETF
 	}
 )
 
@@ -26,7 +23,7 @@ func EtfPortfolioRsi() string {
 		}
 		// Accumulate the weighted prices for each day
 		for i := 0; i < len(prices); i++ {
-			dailyWeightedPrices[i] += prices[i] * float64(weight)
+			dailyWeightedPrices[i] += prices[i] * 100 * float64(weight)
 		}
 	}
 	rsi := calculateRSI(dailyWeightedPrices, 14)
