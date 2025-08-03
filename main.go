@@ -173,6 +173,7 @@ func SendMail(funds []*constant.FundStrategy, quantifyFunds []*constant.FundStra
 			<th>规模</th>
 			<th>今年以来收益率</th>
 			<th>近5年年化收益率</th>
+			<th>赎回费率</th>
         </tr>
 	`
 	for idx, fund := range funds {
@@ -185,6 +186,7 @@ func SendMail(funds []*constant.FundStrategy, quantifyFunds []*constant.FundStra
 			<td>%s</td>
 			<td>%s</td>
 			<td>%s</td>
+			<td style="font-size: 12px;">%s</td>
 		  </tr>`,
 			idx+1,
 			fmt.Sprintf("%s(%s)", fund.Name, fund.Code),
@@ -193,6 +195,7 @@ func SendMail(funds []*constant.FundStrategy, quantifyFunds []*constant.FundStra
 			fmt.Sprintf("%s", fund.Gm),
 			fmt.Sprintf("%s", fund.YearTodayIncome),
 			fmt.Sprintf("%s", fund.Year5Income),
+			fmt.Sprintf("%s", fund.Remark),
 		)
 		fundContent += content
 	}

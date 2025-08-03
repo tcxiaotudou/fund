@@ -155,6 +155,13 @@ func FundStrategy() []*constant.FundStrategy {
 		}
 	}
 
+	// 为最终的基金列表获取赎回费率信息
+	for _, fund := range list {
+		if fund.Code != "" {
+			fund.Remark = GetFundRate(fund.Code)
+		}
+	}
+
 	return list
 }
 
@@ -571,4 +578,72 @@ func QuantifyFundPortfolioRsi(period int) string {
 	}
 	rsi := calculateRSI(dailyWeightedPrices, period)
 	return fmt.Sprintf("%.2f", rsi[len(rsi)-1])
+}
+
+// GetFundRate 获取基金赎回费率信息
+func GetFundRate(fundCode string) string {
+	log.Printf("获取基金赎回费率开始: %s \n", fundCode)
+	url := "https://api.jiucaishuo.com/v2/fund-lists/fundrate"
+	method := "POST"
+
+	payload := []byte(fmt.Sprintf(`{
+		"code": "%s",
+		"type": "h5",
+		"version": "2.5.7"
+	}`, fundCode))
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(payload))
+	if err != nil {
+		log.Printf("创建请求失败: %v", err)
+		return "获取失败"
+	}
+
+	req.Header.Add("accept", "*/*")
+	req.Header.Add("content-type", "application/json")
+	req.Header.Add("priority", "u=1, i")
+	req.Header.Add("Host", "api.jiucaishuo.com")
+	req.Header.Add("Connection", "keep-alive")
+
+	res, err := client.Do(req)
+	if err != nil {
+		log.Printf("请求失败: %v", err)
+		return "获取失败"
+	}
+	defer res.Body.Close()
+
+	responseBody, err := io.ReadAll(res.Body)
+	if err != nil {
+		log.Printf("读取响应失败: %v", err)
+		return "获取失败"
+	}
+
+	response := string(responseBody)
+	log.Printf("获取基金赎回费率结束: %s \n", response)
+
+	if gjson.Get(response, "code").Int() != 0 {
+		log.Printf("API返回错误: %s", response)
+		return "获取失败"
+	}
+
+	// 解析赎回费率数据
+	shArray := gjson.Get(response, "data.sh").Array()
+	if len(shArray) == 0 {
+		return "无赎回费率信息"
+	}
+
+	var rateInfo []string
+	for _, sh := range shArray {
+		time := gjson.Get(sh.String(), "time").String()
+		rate := gjson.Get(sh.String(), "rate").String()
+		if time != "" && rate != "" {
+			rateInfo = append(rateInfo, fmt.Sprintf("%s: %s", time, rate))
+		}
+	}
+
+	if len(rateInfo) == 0 {
+		return "无赎回费率信息"
+	}
+
+	return strings.Join(rateInfo, "; ")
 }
