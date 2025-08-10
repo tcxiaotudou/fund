@@ -95,6 +95,7 @@ func getCurrentPrice(code string, scale int) float64 {
 
 // getPricesForMA 获取用于移动平均线计算的价格数据
 func getPricesForMA(code string, scale int, datalen int) []float64 {
+	time.Sleep(2 * time.Second)
 	url := fmt.Sprintf("https://quotes.sina.cn/cn/api/json_v2.php/CN_MarketDataService.getKLineData?symbol=%s&scale=%d&ma=no&datalen=%d",
 		code, scale, datalen)
 

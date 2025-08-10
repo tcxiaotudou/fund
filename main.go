@@ -23,14 +23,14 @@ func main() {
 	suggestionList = append(suggestionList, "14日RSI（30点以下买买买）"+":"+fmt.Sprintf("%.2f", guoZheng14RsiData.Now))
 	guoZheng90RsiData := strategy.Rsi(constant.GUO_ZHENG, 90)
 	suggestionList = append(suggestionList, "90日RSI（57 点和 70 再平衡）"+":"+fmt.Sprintf("%.2f", guoZheng90RsiData.Now))
+	suggestionList = append(suggestionList, "场外基金组合"+":"+fmt.Sprintf("%s, %s", strategy.FundPortfolioRsi(14), strategy.FundPortfolioRsi(90)))
 	guoZhai14RsiData := strategy.Rsi(constant.GUO_ZHAI, 14)
 	suggestionList = append(suggestionList, "30年国债14日RSI"+":"+fmt.Sprintf("%.2f", guoZhai14RsiData.Now))
 	suggestionList = append(suggestionList, "沪深300风险溢价"+":"+strategy.Stock300Balance())
 	suggestionList = append(suggestionList, "当前股债再平衡建议"+":"+strategy.RsiStockBalance(guoZheng90RsiData.Now))
 	suggestionList = append(suggestionList, "5年均线"+":"+strategy.Ma5y())
 	suggestionList = append(suggestionList, "场内ETF组合"+":"+strategy.EtfPortfolioRsi())
-	suggestionList = append(suggestionList, "场外基金组合"+":"+fmt.Sprintf("%s, %s", strategy.FundPortfolioRsi(14), strategy.FundPortfolioRsi(90)))
-	suggestionList = append(suggestionList, "量化基金组合"+":"+fmt.Sprintf("%s, %s", strategy.QuantifyFundPortfolioRsi(14), strategy.QuantifyFundPortfolioRsi(90)))
+	suggestionList = append(suggestionList, "量化基金组合"+":"+fmt.Sprintf("%s", strategy.QuantifyFundPortfolioRsi(14)))
 	// ETF Rsi
 	suggestions := make([]constant.Suggest, 0)
 	for name, code := range constant.EtfGroups {
