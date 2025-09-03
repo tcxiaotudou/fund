@@ -437,11 +437,9 @@ func FetchGSJZ(fundCode string) (float64, error) {
 
 // 量化基金策略
 var existQuantifyFund = map[string]string{
-	"320016": "诺安多策略混合A",
-	"015880": "中欧小盘成长混合A",
-	"005225": "广发量化多因子混合",
-	"001990": "中欧数据挖掘多因子混合A",
-	"011729": "工银聚享混合A",
+	"008318": "博道久航混合A",
+	"019172": "摩根纳斯达克100指数A",
+	"012708": "东方红中证东方红红利低波指数A",
 }
 
 func QuantifyFundStrategy() []*constant.FundStrategy {
@@ -572,7 +570,11 @@ func QuantifyFundPortfolioRsi(period int) string {
 		}
 		// Accumulate the weighted prices for each day
 		for i := 0; i < len(prices); i++ {
-			dailyWeightedPrices[i] += prices[i] * 100
+			if code == "012708" {
+				dailyWeightedPrices[i] += prices[i] * 20
+			} else {
+				dailyWeightedPrices[i] += prices[i] * 40
+			}
 		}
 	}
 	rsi := calculateRSI(dailyWeightedPrices, period)

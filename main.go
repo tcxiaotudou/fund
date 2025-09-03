@@ -23,14 +23,14 @@ func main() {
 	suggestionList = append(suggestionList, "14日RSI（30点以下买买买）"+":"+fmt.Sprintf("%.2f", guoZheng14RsiData.Now))
 	guoZheng90RsiData := strategy.Rsi(constant.GUO_ZHENG, 90)
 	suggestionList = append(suggestionList, "90日RSI（57 点和 70 再平衡）"+":"+fmt.Sprintf("%.2f", guoZheng90RsiData.Now))
-	suggestionList = append(suggestionList, "场外基金组合"+":"+fmt.Sprintf("%s, %s", strategy.FundPortfolioRsi(14), strategy.FundPortfolioRsi(90)))
 	guoZhai14RsiData := strategy.Rsi(constant.GUO_ZHAI, 14)
 	suggestionList = append(suggestionList, "30年国债14日RSI"+":"+fmt.Sprintf("%.2f", guoZhai14RsiData.Now))
 	suggestionList = append(suggestionList, "沪深300风险溢价"+":"+strategy.Stock300Balance())
 	suggestionList = append(suggestionList, "当前股债再平衡建议"+":"+strategy.RsiStockBalance(guoZheng90RsiData.Now))
 	suggestionList = append(suggestionList, "5年均线"+":"+strategy.Ma5y())
 	suggestionList = append(suggestionList, "场内ETF组合"+":"+strategy.EtfPortfolioRsi())
-	suggestionList = append(suggestionList, "量化基金组合"+":"+fmt.Sprintf("%s", strategy.QuantifyFundPortfolioRsi(14)))
+	suggestionList = append(suggestionList, "偏股混合组合"+":"+fmt.Sprintf("%s", strategy.QuantifyFundPortfolioRsi(14)))
+	suggestionList = append(suggestionList, "养老基金组合"+":"+fmt.Sprintf("%s, %s", strategy.FundPortfolioRsi(14), strategy.FundPortfolioRsi(90)))
 	// ETF Rsi
 	suggestions := make([]constant.Suggest, 0)
 	for name, code := range constant.EtfGroups {
@@ -71,12 +71,12 @@ func main() {
 	funds := strategy.FundStrategy()
 
 	// 量化
-	quantifyFunds := strategy.QuantifyFundStrategy()
+	// quantifyFunds := strategy.QuantifyFundStrategy()
 
 	// 移动平均线策略
 	maStrategyResults := strategy.MaStrategy()
 
-	SendMail(funds, quantifyFunds, suggestions, suggestionList, maStrategyResults)
+	SendMail(funds, nil, suggestions, suggestionList, maStrategyResults)
 }
 
 /**
@@ -163,7 +163,7 @@ func SendMail(funds []*constant.FundStrategy, quantifyFunds []*constant.FundStra
 	}
 
 	// 基金排行榜
-	fundContent := `<h4>价值基金推荐:</h4><br/>
+	fundContent := `<h4>基金推荐:</h4><br/>
 		<table border="1" style="border-collapse: collapse;">
 		<tr>
 			<th>序号</th>
@@ -202,39 +202,42 @@ func SendMail(funds []*constant.FundStrategy, quantifyFunds []*constant.FundStra
 	fundContent += `</table><br/>`
 	content += fundContent
 
-	// 量化基金
-	quantifyFundContent := `<h4>量化基金推荐:</h4><br/>
-		<table border="1" style="border-collapse: collapse;">
-		<tr>
-			<th>序号</th>
-			<th>名称</th>
-			<th>基金经理</th>
-			<th>管理时长</th>
-			<th>规模</th>
-			<th>今年以来收益率</th>
-        </tr>
-	`
-	for idx, fund := range quantifyFunds {
-		content := fmt.Sprintf(`
-		  <tr>
-			<td>%d</td>
-			<td>%s</td>
-			<td>%s</td>
-			<td>%s</td>
-			<td>%s</td>
-			<td>%s</td>
-		  </tr>`,
-			idx+1,
-			fmt.Sprintf("%s(%s)", fund.Name, fund.Code),
-			fmt.Sprintf("%s", fund.PersonName),
-			fmt.Sprintf("%s", fund.PersonYear),
-			fmt.Sprintf("%s", fund.Gm),
-			fmt.Sprintf("%s", fund.YearTodayIncome),
-		)
-		quantifyFundContent += content
-	}
-	quantifyFundContent += `</table><br/>`
-	content += quantifyFundContent
+	/**
+		// 量化基金
+		quantifyFundContent := `<h4>量化基金推荐:</h4><br/>
+			<table border="1" style="border-collapse: collapse;">
+			<tr>
+				<th>序号</th>
+				<th>名称</th>
+				<th>基金经理</th>
+				<th>管理时长</th>
+				<th>规模</th>
+				<th>今年以来收益率</th>
+	        </tr>
+		`
+		for idx, fund := range quantifyFunds {
+			content := fmt.Sprintf(`
+			  <tr>
+				<td>%d</td>
+				<td>%s</td>
+				<td>%s</td>
+				<td>%s</td>
+				<td>%s</td>
+				<td>%s</td>
+			  </tr>`,
+				idx+1,
+				fmt.Sprintf("%s(%s)", fund.Name, fund.Code),
+				fmt.Sprintf("%s", fund.PersonName),
+				fmt.Sprintf("%s", fund.PersonYear),
+				fmt.Sprintf("%s", fund.Gm),
+				fmt.Sprintf("%s", fund.YearTodayIncome),
+			)
+			quantifyFundContent += content
+		}
+		quantifyFundContent += `</table><br/>`
+		content += quantifyFundContent
+
+	*/
 
 	// 相关链接
 	content += "<h4>相关链接:</h4><ul>"
