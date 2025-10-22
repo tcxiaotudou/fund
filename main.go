@@ -28,8 +28,6 @@ func main() {
 	suggestionList = append(suggestionList, "沪深300风险溢价"+":"+strategy.Stock300Balance())
 	suggestionList = append(suggestionList, "当前股债再平衡建议"+":"+strategy.RsiStockBalance(guoZheng90RsiData.Now))
 	suggestionList = append(suggestionList, "5年均线"+":"+strategy.Ma5y())
-	suggestionList = append(suggestionList, "场内ETF组合"+":"+strategy.EtfPortfolioRsi())
-	suggestionList = append(suggestionList, "偏股混合组合"+":"+fmt.Sprintf("%s", strategy.QuantifyFundPortfolioRsi(14)))
 	suggestionList = append(suggestionList, "养老基金组合"+":"+fmt.Sprintf("%s, %s", strategy.FundPortfolioRsi(14), strategy.FundPortfolioRsi(90)))
 	// ETF Rsi
 	suggestions := make([]constant.Suggest, 0)
@@ -97,7 +95,7 @@ func SendMail(funds []*constant.FundStrategy, quantifyFunds []*constant.FundStra
 	m := gomail.NewMessage()
 	m.SetHeader("From", "2290262044@qq.com")
 	m.SetHeader("To", "2290262044@qq.com")
-	m.SetHeader("Cc", "1374716233@qq.com")
+	m.SetHeader("Cc", "1374716233@qq.com", "1753311081@qq.com", "1287321327@qq.com")
 	m.SetHeader("Subject", fmt.Sprintf("每日行情（%s）", strategy.Date))
 	content := "<h4>行情数据：</h4><ul>"
 	for _, value := range result {
