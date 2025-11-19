@@ -28,7 +28,7 @@ func main() {
 	suggestionList = append(suggestionList, "沪深300风险溢价"+":"+strategy.Stock300Balance())
 	suggestionList = append(suggestionList, "当前股债再平衡建议"+":"+strategy.RsiStockBalance(guoZheng90RsiData.Now))
 	suggestionList = append(suggestionList, "5年均线"+":"+strategy.Ma5y())
-	suggestionList = append(suggestionList, "养老基金组合"+":"+fmt.Sprintf("%s, %s", strategy.FundPortfolioRsi(14), strategy.FundPortfolioRsi(90)))
+	suggestionList = append(suggestionList, "养老基金组合"+":"+fmt.Sprintf("14日RSI: %s, 90日RSI: %s, 14周RSI: %s", strategy.FundPortfolioRsi(14), strategy.FundPortfolioRsi(90), strategy.FundPortfolioWeeklyRsi(14)))
 	// ETF Rsi
 	suggestions := make([]constant.Suggest, 0)
 	for name, code := range constant.EtfGroups {

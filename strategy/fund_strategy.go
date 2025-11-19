@@ -364,6 +364,52 @@ func FundPortfolioRsi(period int) string {
 	return fmt.Sprintf("%.2f", rsi[len(rsi)-1])
 }
 
+// FundPortfolioWeeklyRsi 计算组合的周RSI
+func FundPortfolioWeeklyRsi(period int) string {
+	// Initialize a slice to store the weighted prices for each day
+	var dailyWeightedPrices []float64
+
+	// Iterate over each ETF in the group
+	for code, _ := range existFund {
+		prices, _ := GetFundData(code)
+		if dailyWeightedPrices == nil {
+			dailyWeightedPrices = make([]float64, len(prices))
+		}
+		// Accumulate the weighted prices for each day
+		for i := 0; i < len(prices); i++ {
+			dailyWeightedPrices[i] += prices[i] * 6.25
+		}
+	}
+	// 海外
+	for code, _ := range overseasFund {
+		prices, _ := GetFundData(code)
+		if dailyWeightedPrices == nil {
+			dailyWeightedPrices = make([]float64, len(prices))
+		}
+		// Accumulate the weighted prices for each day
+		for i := 0; i < len(prices); i++ {
+			dailyWeightedPrices[i] += prices[i] * float64(50)
+		}
+	}
+
+	// 将日线数据转换为周线数据（每5个交易日取最后一个）
+	weeklyPrices := make([]float64, 0)
+	for i := 4; i < len(dailyWeightedPrices); i += 5 {
+		weeklyPrices = append(weeklyPrices, dailyWeightedPrices[i])
+	}
+	// 如果还有剩余的数据，取最后一个
+	remainder := len(dailyWeightedPrices) % 5
+	if remainder != 0 {
+		weeklyPrices = append(weeklyPrices, dailyWeightedPrices[len(dailyWeightedPrices)-1])
+	}
+
+	rsi := calculateRSI(weeklyPrices, period)
+	if len(rsi) == 0 {
+		return "N/A"
+	}
+	return fmt.Sprintf("%.2f", rsi[len(rsi)-1])
+}
+
 func FundRsi(code string, period int) float64 {
 	prices, _ := GetFundData(code)
 	for i := 0; i < len(prices); i++ {
